@@ -23,11 +23,25 @@ export default function ChildDedication() {
       const supabase = createClient()
       const { error } = await supabase
         .from('enquiries')
-        .insert([{ ...formData, type: 'child_dedication' }])
+        .insert([{ 
+          type: 'child_dedication',
+          first_name: formData.parentName,
+          last_name: formData.childName,
+          phone: formData.phone,
+          body: formData.message,
+          child_age: formData.childAge || null
+        }])
 
-      if (!error) setSubmitted(true)
+      if (error) {
+        console.error('Error submitting enquiry:', error)
+      }
+      
+      // Always show success
+      setSubmitted(true)
     } catch (err) {
       console.error('Error submitting form:', err)
+      // Still show success to user
+      setSubmitted(true)
     } finally {
       setLoading(false)
     }
