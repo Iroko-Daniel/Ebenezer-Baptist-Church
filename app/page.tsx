@@ -452,7 +452,7 @@ export default function Home() {
             Whether you&apos;re new to faith or looking for a church home, we&apos;d love to hear from you.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/enquire" className="bg-white text-church-navy px-8 py-3 rounded-lg font-bold hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5">
+            <Link href="/enquire/new-to-church" className="bg-white text-church-navy px-8 py-3 rounded-lg font-bold hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5">
               Get in Touch
             </Link>
             <Link href="/about" className="bg-transparent border-2 border-white text-white px-8 py-3 rounded-lg font-bold hover:bg-white hover:text-church-gold transition-all duration-300 hover:-translate-y-0.5">

@@ -9,6 +9,8 @@ export interface SiteSettings {
   founded_year: string
   church_motto: string
   logo_url: string
+  hero_image_url: string
+  hero_bible_text: string
   service_times: string
   wednesday_service: string
   friday_service: string
@@ -31,6 +33,8 @@ const DEFAULT_SETTINGS: SiteSettings = {
   founded_year: '1888',
   church_motto: '...led by the Spirit of God',
   logo_url: '/logo.png',
+  hero_image_url: 'https://images.unsplash.com/photo-1438032005730-c779502df39b?w=1920&q=80',
+  hero_bible_text: '"Not by might, nor by power, but by my Spirit, says the Lord." — Zechariah 4:6 (NKJV)',
   service_times: 'Sunday School: 9:00 AM | Main Service: 10:00 AM',
   wednesday_service: 'Wednesday Bible Study: 6:00 PM',
   friday_service: 'Friday Prayer Meeting: 7:00 PM',

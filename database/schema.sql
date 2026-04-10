@@ -168,6 +168,16 @@ CREATE TABLE IF NOT EXISTS give_accounts (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS social_links (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  url TEXT NOT NULL,
+  icon TEXT NOT NULL,
+  sort_order INTEGER DEFAULT 0,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- =====================================================
 -- 2. CREATE INDEXES
 -- =====================================================
@@ -185,6 +195,7 @@ CREATE INDEX IF NOT EXISTS idx_give_accounts_sort ON give_accounts(sort_order AS
 CREATE INDEX IF NOT EXISTS idx_login_logs_device_type ON login_logs(device_type);
 CREATE INDEX IF NOT EXISTS idx_login_logs_os_name ON login_logs(os_name);
 CREATE INDEX IF NOT EXISTS idx_login_logs_browser_name ON login_logs(browser_name);
+CREATE INDEX IF NOT EXISTS idx_social_links_sort ON social_links(sort_order ASC);
 
 -- =====================================================
 -- 3. INSERT DEFAULT DATA
@@ -229,8 +240,17 @@ INSERT INTO site_settings (setting_key, setting_value) VALUES
   ('facebook_url', ''),
   ('twitter_url', ''),
   ('youtube_url', ''),
-  ('instagram_url', '')
+  ('instagram_url', ''),
+  ('hero_image_url', 'https://images.unsplash.com/photo-1438032005730-c779502df39b?w=1920&q=80'),
+  ('hero_bible_text', '"Not by might, nor by power, but by my Spirit, says the Lord." — Zechariah 4:6 (NKJV)')
 ON CONFLICT (setting_key) DO NOTHING;
+
+-- Default social links
+INSERT INTO social_links (name, url, icon, sort_order) VALUES
+  ('Facebook', 'https://www.facebook.com/ebenezerbclagos50A/', 'facebook', 1),
+  ('YouTube', 'https://www.youtube.com/@ebenezerbaptistchurch2246', 'youtube', 2),
+  ('Instagram', 'https://www.instagram.com/ebenezerbclagos/', 'instagram', 3)
+ON CONFLICT DO NOTHING;
 
 -- Default church history
 INSERT INTO about_content (section, content)
@@ -307,6 +327,7 @@ DROP POLICY IF EXISTS "Allow all login_logs" ON login_logs;
 DROP POLICY IF EXISTS "Allow all about_content" ON about_content;
 DROP POLICY IF EXISTS "Allow all core_values" ON core_values;
 DROP POLICY IF EXISTS "Allow all give_accounts" ON give_accounts;
+DROP POLICY IF EXISTS "Allow all social_links" ON social_links;
 DROP POLICY IF EXISTS "Allow public uploads" ON storage.objects;
 DROP POLICY IF EXISTS "Allow public viewing" ON storage.objects;
 DROP POLICY IF EXISTS "Allow public deletes" ON storage.objects;
@@ -327,6 +348,7 @@ ALTER TABLE login_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE about_content ENABLE ROW LEVEL SECURITY;
 ALTER TABLE core_values ENABLE ROW LEVEL SECURITY;
 ALTER TABLE give_accounts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE social_links ENABLE ROW LEVEL SECURITY;
 
 -- Create "Allow All" policies for each table
 CREATE POLICY "Allow all sermons" ON sermons FOR ALL USING (true) WITH CHECK (true);
@@ -344,6 +366,7 @@ CREATE POLICY "Allow all login_logs" ON login_logs FOR ALL USING (true) WITH CHE
 CREATE POLICY "Allow all about_content" ON about_content FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all core_values" ON core_values FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all give_accounts" ON give_accounts FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all social_links" ON social_links FOR ALL USING (true) WITH CHECK (true);
 
 -- Storage bucket policies
 CREATE POLICY "Allow public uploads" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'gallery');

@@ -28,7 +28,7 @@ export default function Header() {
       clearTimeout(dropdownTimers[name]!)
       setDropdownTimers(prev => ({ ...prev, [name]: null }))
     }
-    
+
     if (name === 'about') setAboutDropdown(true)
     else if (name === 'media') setMediaDropdown(true)
     else if (name === 'enquire') setEnquireDropdown(true)
@@ -42,8 +42,25 @@ export default function Header() {
       else if (name === 'enquire') setEnquireDropdown(false)
       setDropdownTimers(prev => ({ ...prev, [name]: null }))
     }, 100)
-    
+
     setDropdownTimers(prev => ({ ...prev, [name]: timer }))
+  }
+
+  const toggleMobileSection = (section: 'about' | 'media' | 'enquire') => {
+    // Close all other sections, toggle the clicked one
+    if (section === 'about') {
+      setMobileAboutExpanded(!mobileAboutExpanded)
+      setMobileMediaExpanded(false)
+      setMobileEnquireExpanded(false)
+    } else if (section === 'media') {
+      setMobileMediaExpanded(!mobileMediaExpanded)
+      setMobileAboutExpanded(false)
+      setMobileEnquireExpanded(false)
+    } else {
+      setMobileEnquireExpanded(!mobileEnquireExpanded)
+      setMobileAboutExpanded(false)
+      setMobileMediaExpanded(false)
+    }
   }
 
   useEffect(() => {
