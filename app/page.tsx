@@ -42,11 +42,25 @@ export default function Home() {
   const [sermons, setSermons] = useState<Sermon[]>([])
   const [events, setEvents] = useState<Event[]>([])
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
+  const [heroImage, setHeroImage] = useState('https://images.unsplash.com/photo-1438032005730-c779502df39b?w=1920&q=80')
+  const [heroBibleText, setHeroBibleText] = useState('"Not by might, nor by power, but by my Spirit, says the Lord." — Zechariah 4:6 (NKJV)')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     fetchData()
+    fetchHeroSettings()
   }, [])
+
+  const fetchHeroSettings = async () => {
+    try {
+      const { getSiteSettings } = await import('@/lib/site-settings')
+      const settings = await getSiteSettings()
+      if (settings.hero_image_url) setHeroImage(settings.hero_image_url)
+      if (settings.hero_bible_text) setHeroBibleText(settings.hero_bible_text)
+    } catch (err) {
+      console.error('Error fetching hero settings:', err)
+    }
+  }
 
   const fetchData = async () => {
     try {
@@ -108,7 +122,7 @@ export default function Home() {
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: "url('https://images.unsplash.com/photo-1438032005730-c779502df39b?w=1920&q=80')"
+            backgroundImage: `url('${heroImage}')`
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/70" />
@@ -130,9 +144,7 @@ export default function Home() {
           </h1>
 
           <p className="text-base sm:text-lg md:text-xl mb-6 italic text-white/90 drop-shadow-lg max-w-2xl mx-auto px-4">
-            &ldquo;Not by might, nor by power, but by my Spirit, says the Lord.&rdquo;
-            <br />
-            <span className="text-sm md:text-base opacity-80">— Zechariah 4:6 (NKJV)</span>
+            {heroBibleText}
           </p>
 
           <div className="flex flex-wrap justify-center items-center gap-3 px-4">

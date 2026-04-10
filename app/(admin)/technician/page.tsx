@@ -1231,6 +1231,8 @@ function SiteSettingsManager() {
   const [saving, setSaving] = useState(false)
   const [logoFile, setLogoFile] = useState<File | null>(null)
   const [logoPreview, setLogoPreview] = useState<string>('/logo.png')
+  const [heroImageFile, setHeroImageFile] = useState<File | null>(null)
+  const [heroImagePreview, setHeroImagePreview] = useState<string>('')
 
   useEffect(() => { fetchSettings() }, [])
 
@@ -1242,6 +1244,7 @@ function SiteSettingsManager() {
       data.forEach(s => { settingsObj[s.setting_key] = s.setting_value || '' })
       setSettings(settingsObj)
       if (settingsObj.logo_url) setLogoPreview(settingsObj.logo_url)
+      if (settingsObj.hero_image_url) setHeroImagePreview(settingsObj.hero_image_url)
     }
     setLoading(false)
   }
@@ -1256,30 +1259,50 @@ function SiteSettingsManager() {
     }
   }
 
+  const handleHeroImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setHeroImageFile(file)
+      const reader = new FileReader()
+      reader.onloadend = () => setHeroImagePreview(reader.result as string)
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const uploadImage = async (file: File, folder: string): Promise<string> => {
+    const supabase = createClient()
+    const fileExt = file.name.split('.').pop()
+    const fileName = `${folder}-${Date.now()}.${fileExt}`
+    const filePath = `gallery/${fileName}`
+    const { error: uploadError } = await supabase.storage.from('gallery').upload(filePath, file)
+    if (uploadError) {
+      if (uploadError.message.includes('Failed to fetch')) {
+        throw new Error('Storage bucket "gallery" not found. Please run the supabase-storage-setup.sql script.')
+      }
+      throw uploadError
+    }
+    const { data: publicUrlData } = supabase.storage.from('gallery').getPublicUrl(filePath)
+    return publicUrlData.publicUrl
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
     try {
       let logoUrl = settings.logo_url || '/logo.png'
+      let heroImageUrl = settings.hero_image_url || ''
+
       if (logoFile) {
-        const supabase = createClient()
-        const fileExt = logoFile.name.split('.').pop()
-        const fileName = `logo-${Date.now()}.${fileExt}`
-        const filePath = `gallery/${fileName}`
-        const { error: uploadError } = await supabase.storage.from('gallery').upload(filePath, logoFile)
-        if (uploadError) {
-          if (uploadError.message.includes('Failed to fetch')) {
-            throw new Error('Storage bucket "gallery" not found. Please run the supabase-storage-setup.sql script.')
-          }
-          throw uploadError
-        }
-        const { data: publicUrlData } = supabase.storage.from('gallery').getPublicUrl(filePath)
-        logoUrl = publicUrlData.publicUrl
+        logoUrl = await uploadImage(logoFile, 'logo')
       }
+      if (heroImageFile) {
+        heroImageUrl = await uploadImage(heroImageFile, 'hero')
+      }
+
       const supabase = createClient()
       const settingsToSave = Object.entries(settings).map(([key, value]) => ({
         setting_key: key,
-        setting_value: key === 'logo_url' ? logoUrl : value,
+        setting_value: key === 'logo_url' ? logoUrl : key === 'hero_image_url' ? heroImageUrl : value,
         updated_at: new Date().toISOString()
       }))
       for (const setting of settingsToSave) {
@@ -1331,6 +1354,39 @@ function SiteSettingsManager() {
               <span className="text-xs text-gray-500">Current logo</span>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Hero Section */}
+      <div className="bg-gray-50 p-5 rounded-xl border border-gray-100 space-y-4">
+        <h4 className="font-bold text-gray-800 text-sm uppercase tracking-wide flex items-center gap-2">🖼️ Hero Section (Homepage)</h4>
+        <div>
+          <label className="block text-gray-700 font-semibold mb-2 text-sm">Hero Background Image URL</label>
+          <input
+            type="text"
+            value={settings.hero_image_url || ''}
+            onChange={e => setSettings({...settings, hero_image_url: e.target.value})}
+            className="w-full px-4 py-2.5 border border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm"
+            placeholder="https://example.com/hero-image.jpg"
+          />
+          <p className="text-xs text-gray-500 mt-1">Or upload an image below</p>
+          {heroImagePreview && (
+            <div className="mt-2">
+              <img src={heroImagePreview} alt="Hero preview" className="w-full h-32 object-cover rounded-lg border" />
+            </div>
+          )}
+          <input type="file" accept="image/*" onChange={handleHeroImageChange} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm mt-2" />
+        </div>
+        <div>
+          <label className="block text-gray-700 font-semibold mb-2 text-sm">Hero Bible Verse / Text</label>
+          <textarea
+            value={settings.hero_bible_text || ''}
+            onChange={e => setSettings({...settings, hero_bible_text: e.target.value})}
+            className="w-full px-4 py-2.5 border border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-pink-500 focus:border-transparent"
+            rows={3}
+            placeholder='"Not by might, nor by power, but by my Spirit, says the Lord." — Zechariah 4:6 (NKJV)'
+          />
+          <p className="text-xs text-gray-500 mt-1">This text appears on the homepage hero section</p>
         </div>
       </div>
 

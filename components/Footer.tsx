@@ -55,7 +55,14 @@ export default function Footer() {
         .order('sort_order', { ascending: true })
 
       if (data && !error) {
-        setSocialLinks(data)
+        // Deduplicate by icon name (keep first occurrence)
+        const seen = new Set<string>()
+        const uniqueLinks = data.filter(link => {
+          if (seen.has(link.icon)) return false
+          seen.add(link.icon)
+          return true
+        })
+        setSocialLinks(uniqueLinks)
       }
     } catch (err) {
       console.error('Error fetching social links:', err)
