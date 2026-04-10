@@ -3,19 +3,6 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
-const announcementImages = [
-  'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=600&q=80',
-  'https://images.unsplash.com/photo-1517048676732-d65bc937f952?w=600&q=80',
-  'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=600&q=80',
-  'https://images.unsplash.com/photo-1475721027785-f7eccf877e2?w=600&q=80',
-  'https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=600&q=80',
-  'https://images.unsplash.com/photo-1544427920-c49ccfb85579?w=600&q=80',
-  'https://images.unsplash.com/photo-1517457373958-b7bdd4587205?w=600&q=80',
-  'https://images.unsplash.com/photo-1490730141103-6cac27aaab94?w=600&q=80',
-  'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=600&q=80',
-  'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&q=80'
-]
-
 export default function Announcements() {
   const [announcements, setAnnouncements] = useState<any[]>([])
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<any | null>(null)
@@ -77,25 +64,17 @@ export default function Announcements() {
                   onClick={() => setSelectedAnnouncement(announcement)}
                   className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border border-gray-100"
                 >
-                  <div
-                    className="h-40 bg-cover bg-center relative"
-                    style={{ backgroundImage: `url('${announcementImages[index % announcementImages.length]}')` }}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-                    <div className="absolute bottom-3 left-3 flex items-center space-x-2">
+                  <div className="p-5">
+                    <div className="flex items-center justify-between mb-3">
                       <span className={`${getPriorityColor(announcement.priority)} text-white px-2.5 py-0.5 rounded-full text-xs font-bold capitalize`}>
                         {announcement.priority}
                       </span>
-                    </div>
-                    <div className="absolute bottom-3 right-3">
-                      <span className="bg-white/90 text-gray-700 px-2 py-0.5 rounded-full text-[10px] font-semibold">
+                      <span className="text-gray-500 text-xs font-semibold">
                         {new Date(announcement.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       </span>
                     </div>
-                  </div>
-                  <div className="p-4">
                     <h3 className="text-sm font-bold mb-2 text-gray-900 line-clamp-2">{announcement.title}</h3>
-                    <p className="text-gray-600 text-xs line-clamp-2 mb-3">{announcement.content}</p>
+                    <p className="text-gray-600 text-xs line-clamp-3 mb-3">{announcement.content}</p>
                     <p className="text-[#1e3a5f] font-semibold text-xs inline-flex items-center">
                       Click for details
                       <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -114,20 +93,17 @@ export default function Announcements() {
       {selectedAnnouncement && (
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-3 sm:p-4" onClick={() => setSelectedAnnouncement(null)}>
           <div className="bg-white rounded-2xl max-w-lg w-full max-h-[85vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div
-              className="relative h-44 sm:h-52 bg-cover bg-center"
-              style={{ backgroundImage: `url('${announcementImages[announcements.findIndex(a => a.id === selectedAnnouncement.id) % announcementImages.length]}')` }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
-              <button onClick={() => setSelectedAnnouncement(null)} className="absolute top-4 right-4 bg-white/90 hover:bg-white text-gray-700 w-10 h-10 rounded-full flex items-center justify-center text-xl font-bold transition shadow-lg">✕</button>
-              <div className="absolute bottom-4 left-5 flex items-center space-x-2">
+            {/* Header */}
+            <div className="relative bg-gradient-to-br from-[#1e3a5f] to-[#2a5a8f] p-6 rounded-t-2xl">
+              <button onClick={() => setSelectedAnnouncement(null)} className="absolute top-4 right-4 bg-white/20 hover:bg-white/30 text-white w-8 h-8 rounded-full flex items-center justify-center text-lg font-bold transition">✕</button>
+              <div className="flex items-center space-x-2 mb-2">
                 <span className={`${getPriorityColor(selectedAnnouncement.priority)} text-white px-3 py-1 rounded-full text-xs font-bold capitalize`}>{selectedAnnouncement.priority}</span>
-                <span className="bg-white/90 text-gray-700 px-2.5 py-1 rounded-full text-xs font-semibold">{new Date(selectedAnnouncement.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+                <span className="text-white/80 text-xs font-semibold">{new Date(selectedAnnouncement.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
               </div>
+              <h2 className="text-xl font-bold text-white pr-10">{selectedAnnouncement.title}</h2>
             </div>
             <div className="p-5 sm:p-8">
-              <h2 className="text-lg sm:text-xl font-bold text-[#1e3a5f] mb-4">{selectedAnnouncement.title}</h2>
-              <p className="text-gray-700 leading-relaxed text-sm sm:text-base">{selectedAnnouncement.content}</p>
+              <p className="text-gray-700 leading-relaxed text-sm sm:text-base whitespace-pre-line">{selectedAnnouncement.content}</p>
               <div className="mt-8 pt-6 border-t border-gray-200 text-center">
                 <button onClick={() => setSelectedAnnouncement(null)} className="bg-[#1e3a5f] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#2a5a8f] transition shadow-lg">Close</button>
               </div>
