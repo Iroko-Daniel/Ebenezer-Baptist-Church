@@ -10,6 +10,9 @@ export default function Header() {
   const [aboutDropdown, setAboutDropdown] = useState(false)
   const [mediaDropdown, setMediaDropdown] = useState(false)
   const [enquireDropdown, setEnquireDropdown] = useState(false)
+  const [mobileAboutExpanded, setMobileAboutExpanded] = useState(false)
+  const [mobileMediaExpanded, setMobileMediaExpanded] = useState(false)
+  const [mobileEnquireExpanded, setMobileEnquireExpanded] = useState(false)
   const [newEnquiryCount, setNewEnquiryCount] = useState(0)
   const [scrolled, setScrolled] = useState(false)
   const [settings, setSettings] = useState<SiteSettings | null>(null)
@@ -61,6 +64,11 @@ export default function Header() {
 
   useEffect(() => {
     const checkNewEnquiries = async () => {
+      // Check if Supabase credentials are configured
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        return
+      }
+
       try {
         const supabase = createClient()
         const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
@@ -247,21 +255,89 @@ export default function Header() {
           <div className="lg:hidden pb-3 border-t border-white/10 pt-3">
             <nav className="flex flex-col space-y-1">
               <Link href="/" className="text-white hover:text-[#d4af37] py-1.5 transition-colors text-sm">Home</Link>
-              <Link href="/about#history" className="text-white/80 hover:text-[#d4af37] py-1.5 pl-4 transition-colors text-sm">Our History</Link>
-              <Link href="/about#mission-vision" className="text-white/80 hover:text-[#d4af37] py-1.5 pl-4 transition-colors text-sm">Mission, Vision & Values</Link>
-              <Link href="/about/executives" className="text-white/80 hover:text-[#d4af37] py-1.5 pl-4 transition-colors text-sm">Executives</Link>
-              <Link href="/sermons" className="text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm">Sermons</Link>
-              <Link href="/events" className="text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm">Events</Link>
-              <Link href="/gallery" className="text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm">Gallery</Link>
-              <Link href="/livestream" className="text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm">Livestream</Link>
-              <Link href="/announcements" className="text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm">Announcements</Link>
-              <Link href="/enquire/new-to-church" className="text-white/80 hover:text-[#d4af37] py-1.5 pl-4 transition-colors text-sm">New to Church</Link>
-              <Link href="/enquire/counselling" className="text-white/80 hover:text-[#d4af37] py-1.5 pl-4 transition-colors text-sm">Counselling</Link>
-              <Link href="/enquire/getting-married" className="text-white/80 hover:text-[#d4af37] py-1.5 pl-4 transition-colors text-sm">Getting Married</Link>
-              <Link href="/enquire/child-dedication" className="text-white/80 hover:text-[#d4af37] py-1.5 pl-4 transition-colors text-sm">Child Dedication</Link>
-              <Link href="/enquire/prayer-requests" className="text-white/80 hover:text-[#d4af37] py-1.5 pl-4 transition-colors text-sm">Prayer Requests</Link>
-              <Link href="/enquire/testimonies" className="text-white/80 hover:text-[#d4af37] py-1.5 pl-4 transition-colors text-sm">Testimonies</Link>
-              <Link href="/branches" className="text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm">Branches</Link>
+              
+              {/* About - Expandable */}
+              <div>
+                <button
+                  onClick={() => setMobileAboutExpanded(!mobileAboutExpanded)}
+                  className="w-full flex items-center justify-between text-white hover:text-[#d4af37] py-1.5 transition-colors text-sm"
+                >
+                  About
+                  <svg
+                    className={`w-3 h-3 transition-transform duration-300 ${mobileAboutExpanded ? 'rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {mobileAboutExpanded && (
+                  <div className="pl-4 border-l-2 border-white/10 mt-1 space-y-1">
+                    <Link href="/about#history" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm">Our History</Link>
+                    <Link href="/about#mission-vision" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm">Mission, Vision & Values</Link>
+                    <Link href="/about/executives" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm">Executives</Link>
+                  </div>
+                )}
+              </div>
+
+              {/* Media - Expandable */}
+              <div>
+                <button
+                  onClick={() => setMobileMediaExpanded(!mobileMediaExpanded)}
+                  className="w-full flex items-center justify-between text-white hover:text-[#d4af37] py-1.5 transition-colors text-sm"
+                >
+                  Media
+                  <svg
+                    className={`w-3 h-3 transition-transform duration-300 ${mobileMediaExpanded ? 'rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {mobileMediaExpanded && (
+                  <div className="pl-4 border-l-2 border-white/10 mt-1 space-y-1">
+                    <Link href="/sermons" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm">Sermons</Link>
+                    <Link href="/events" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm">Events</Link>
+                    <Link href="/gallery" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm">Gallery</Link>
+                    <Link href="/livestream" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm">Livestream</Link>
+                  </div>
+                )}
+              </div>
+
+              <Link href="/announcements" className="text-white hover:text-[#d4af37] py-1.5 transition-colors text-sm">Announcements</Link>
+
+              {/* Enquire - Expandable */}
+              <div>
+                <button
+                  onClick={() => setMobileEnquireExpanded(!mobileEnquireExpanded)}
+                  className="w-full flex items-center justify-between text-white hover:text-[#d4af37] py-1.5 transition-colors text-sm"
+                >
+                  Enquire
+                  <svg
+                    className={`w-3 h-3 transition-transform duration-300 ${mobileEnquireExpanded ? 'rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {mobileEnquireExpanded && (
+                  <div className="pl-4 border-l-2 border-white/10 mt-1 space-y-1">
+                    <Link href="/enquire/new-to-church" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm">New to Church</Link>
+                    <Link href="/enquire/counselling" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm">Counselling</Link>
+                    <Link href="/enquire/getting-married" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm">Getting Married</Link>
+                    <Link href="/enquire/child-dedication" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm">Child Dedication</Link>
+                    <Link href="/enquire/prayer-requests" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm">Prayer Requests</Link>
+                    <Link href="/enquire/testimonies" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm">Testimonies</Link>
+                  </div>
+                )}
+              </div>
+
+              <Link href="/branches" className="text-white hover:text-[#d4af37] py-1.5 transition-colors text-sm">Branches</Link>
               <Link href="/give" className="give-now-btn text-center py-1.5 mt-2 text-sm">Give Now</Link>
             </nav>
           </div>
