@@ -45,7 +45,7 @@ export default function GiveNow() {
           ...account,
           color: bankColors[account.bank] || `from-[#1e3a5f] to-[#7a2040]`
         }))
-        setAccounts(accountsWithColor)
+        setAccounts(accountsWithColors)
       }
       setLoading(false)
     } catch (error) {

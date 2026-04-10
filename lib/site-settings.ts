@@ -52,18 +52,37 @@ const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
  */
 export async function getSiteSettings(forceRefresh = false): Promise<SiteSettings> {
   const now = Date.now()
-  
+
   // Return cached settings if still valid
   if (!forceRefresh && cachedSettings && (now - lastFetch) < CACHE_DURATION) {
     return cachedSettings
   }
 
+  // Check if Supabase environment variables are set
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    console.warn('⚠️ Supabase credentials not configured, using default settings')
+    cachedSettings = DEFAULT_SETTINGS
+    lastFetch = now
+    return DEFAULT_SETTINGS
+  }
+
   try {
     const supabase = createClient()
-    const { data, error } = await supabase.from('site_settings').select('setting_key, setting_value')
     
-    if (error || !data || data.length === 0) {
-      console.warn('Failed to fetch site settings, using defaults:', error?.message)
+    const { data, error } = await supabase
+      .from('site_settings')
+      .select('setting_key, setting_value')
+
+    if (error) {
+      console.error('❌ Supabase error:', error.message)
+      console.warn('Using default settings as fallback')
+      cachedSettings = DEFAULT_SETTINGS
+      lastFetch = now
+      return DEFAULT_SETTINGS
+    }
+    
+    if (!data || data.length === 0) {
+      console.warn('⚠️ No site settings found in database, using defaults')
       cachedSettings = DEFAULT_SETTINGS
       lastFetch = now
       return DEFAULT_SETTINGS
@@ -71,18 +90,18 @@ export async function getSiteSettings(forceRefresh = false): Promise<SiteSetting
 
     // Convert array to object
     const settings: any = {}
-    data.forEach(item => {
+    data.forEach((item: { setting_key: string, setting_value: string }) => {
       settings[item.setting_key] = item.setting_value || ''
     })
 
     // Merge with defaults for any missing keys
     cachedSettings = { ...DEFAULT_SETTINGS, ...settings }
     lastFetch = now
-    
-    return cachedSettings
+
+    return cachedSettings as SiteSettings
   } catch (error) {
     console.error('Error fetching site settings:', error)
-    return cachedSettings || DEFAULT_SETTINGS
+    return (cachedSettings || DEFAULT_SETTINGS) as SiteSettings
   }
 }
 

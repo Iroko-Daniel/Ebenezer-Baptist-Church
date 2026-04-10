@@ -12,31 +12,52 @@ export default function Livestream() {
   const fetchLivestream = async () => {
     const supabase = createClient()
     const { data, error } = await supabase.from('livestream').select('*').limit(1).maybeSingle()
-    console.log('Livestream data:', data)
-    console.log('Error:', error)
-    if (data) setLivestream(data)
+    console.log('📺 Livestream data:', data)
+    console.log('📺 Error:', error)
+    console.log('📺 is_active:', data?.is_active)
+    console.log('📺 youtube_url:', data?.youtube_url)
+    if (data) {
+      setLivestream(data)
+      console.log('📺 Embed URL:', getEmbedUrl(data.youtube_url))
+    }
     setLoading(false)
   }
 
   // Convert YouTube URL to embed format
   const getEmbedUrl = (url: string) => {
     if (!url) return ''
-    
+
     // Already embed format
-    if (url.includes('/embed/')) return url
-    
-    // Extract video ID from watch URL
-    const match = url.match(/[?&]v=([^&]+)/)
-    if (match) {
-      return `https://www.youtube.com/embed/${match[1]}?rel=0&autoplay=1`
+    if (url.includes('/embed/')) {
+      // Add autoplay if not present
+      return url.includes('?') ? url : `${url}?rel=0&autoplay=1`
     }
-    
-    // Short URL format (youtu.be)
+
+    // Standard watch URL: https://www.youtube.com/watch?v=VIDEO_ID
+    const watchMatch = url.match(/[?&]v=([^&]+)/)
+    if (watchMatch) {
+      return `https://www.youtube.com/embed/${watchMatch[1]}?rel=0&autoplay=1`
+    }
+
+    // Short URL: https://youtu.be/VIDEO_ID
     if (url.includes('youtu.be/')) {
-      const id = url.split('youtu.be/')[1]?.split('?')[0]
+      const id = url.split('youtu.be/')[1]?.split('?')[0]?.split('&')[0]
       return `https://www.youtube.com/embed/${id}?rel=0&autoplay=1`
     }
-    
+
+    // YouTube live URL: https://www.youtube.com/live/VIDEO_ID
+    const liveMatch = url.match(/\/live\/([^?&]+)/)
+    if (liveMatch) {
+      return `https://www.youtube.com/embed/${liveMatch[1]}?rel=0&autoplay=1`
+    }
+
+    // If it's just a video ID
+    if (!url.includes('/') && !url.includes('?') && url.length > 5) {
+      return `https://www.youtube.com/embed/${url}?rel=0&autoplay=1`
+    }
+
+    // Return as-is if we can't parse it (might already be correct)
+    console.warn('Could not parse YouTube URL:', url)
     return url
   }
 

@@ -1,9 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { login, getUsers, createUser, deleteUser, User } from '@/lib/auth'
+import { useRouter } from 'next/navigation'
+import { logout, getUsers, createUser, deleteUser, User } from '@/lib/auth'
 import { createClient } from '@/lib/supabase/client'
 import Notifications from '@/components/Notifications'
+import LoginLogs from '@/components/features/LoginLogs'
 
 const NAV_ITEMS = [
   { id: 'notifications', label: 'Enquiries', emoji: '📧' },
@@ -16,6 +18,7 @@ const NAV_ITEMS = [
   { id: 'give', label: 'Give Settings', emoji: '💰' },
   { id: 'about', label: 'About Content', emoji: '📜' },
   { id: 'settings', label: 'Site Settings', emoji: '⚙️' },
+  { id: 'loginlogs', label: 'Login Logs', emoji: '📊' },
   { id: 'admins', label: 'Manage Users', emoji: '👥' },
 ] as const
 
@@ -24,15 +27,37 @@ type TabId = typeof NAV_ITEMS[number]['id']
 export default function TechnicianPage() {
   const [activeTab, setActiveTab] = useState<TabId>('sermons')
   const [user, setUser] = useState<User | null>(null)
-  const [loginForm, setLoginForm] = useState({ username: '', password: '' })
-  const [loginError, setLoginError] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [showAddUser, setShowAddUser] = useState(false)
   const [newUser, setNewUser] = useState({ username: '', password: '', role: 'admin' as 'admin' | 'technician' })
   const [adminUsers, setAdminUsers] = useState<User[]>([])
   const [savingUser, setSavingUser] = useState(false)
   const [isDark, setIsDark] = useState(false)
   const [showGreeting, setShowGreeting] = useState(false)
+  const router = useRouter()
+
+  // Check authentication on mount
+  useEffect(() => {
+    const savedUser = localStorage.getItem('church-user')
+    if (!savedUser) {
+      router.push('/login')
+      return
+    }
+    try {
+      const parsedUser = JSON.parse(savedUser)
+      if (parsedUser.role !== 'technician') {
+        // Not a technician, redirect to login
+        router.push('/login')
+        return
+      }
+      setUser(parsedUser)
+      loadUsers()
+    } catch (e) {
+      localStorage.removeItem('church-user')
+      router.push('/login')
+    }
+    setLoading(false)
+  }, [router])
 
   // Load theme from localStorage
   useEffect(() => {
@@ -45,23 +70,17 @@ export default function TechnicianPage() {
     localStorage.setItem('technician-theme', isDark ? 'dark' : 'light')
   }, [isDark])
 
-  const toggleTheme = () => setIsDark(!isDark)
+  // Auto-logout when leaving the page
+  useEffect(() => {
+    return () => {
+      if (user) {
+        logout(user.id)
+        localStorage.removeItem('church-user')
+      }
+    }
+  }, [user])
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setLoginError('')
-    const loggedInUser = await login(loginForm.username, loginForm.password)
-    if (loggedInUser) {
-      if (loggedInUser.role === 'admin') { setLoginError('Invalid username or password'); setLoading(false); return }
-      setUser(loggedInUser)
-      setShowGreeting(true)
-      // Auto-hide greeting after 3 seconds
-      setTimeout(() => setShowGreeting(false), 3000)
-      loadUsers()
-    } else { setLoginError('Invalid username or password') }
-    setLoading(false)
-  }
+  const toggleTheme = () => setIsDark(!isDark)
 
   const loadUsers = async () => { const users = await getUsers(); setAdminUsers(users) }
 
@@ -69,8 +88,13 @@ export default function TechnicianPage() {
     e.preventDefault()
     setSavingUser(true)
     const success = await createUser(newUser.username, newUser.password, newUser.role)
-    if (success) { alert('✅ User created!'); setNewUser({ username: '', password: '', role: 'admin' }); setShowAddUser(false); loadUsers() }
-    else alert('❌ Failed. Username may already exist.')
+    if (success) { 
+      alert('✅ User created successfully!')
+      setNewUser({ username: '', password: '', role: 'admin' })
+      setShowAddUser(false)
+      loadUsers() 
+    }
+    // Error alert is already shown in createUser function
     setSavingUser(false)
   }
 
@@ -79,73 +103,19 @@ export default function TechnicianPage() {
     if (await deleteUser(userId)) { alert('✅ Deleted!'); loadUsers() } else alert('❌ Failed.')
   }
 
-  // ───────────── LOGIN SCREEN ─────────────
-  if (!user) {
+  const handleLogout = () => {
+    logout(user?.id || '')
+    localStorage.removeItem('church-user')
+    router.push('/login')
+  }
+
+  // Show loading state while checking auth
+  if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a0a0e] via-[#3a0f20] to-[#1a0a0e] flex items-center justify-center p-4">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -left-40 w-80 h-80 bg-pink-500/10 rounded-full blur-3xl" />
-          <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-rose-500/10 rounded-full blur-3xl" />
-        </div>
-
-        <div className="relative z-10 w-full max-w-md">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-pink-500 to-rose-600 rounded-2xl shadow-lg shadow-pink-500/25 mb-4">
-              <span className="text-3xl">🔧</span>
-            </div>
-            <h1 className="text-2xl font-bold text-white font-serif">Ebenezer Baptist Church</h1>
-            <p className="text-pink-300/70 text-sm mt-1">Technician Portal</p>
-          </div>
-
-          <div className="bg-white/10 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/10 overflow-hidden">
-            <div className="p-8">
-              <h2 className="text-xl font-bold text-white mb-1">Welcome Back 👋</h2>
-              <p className="text-gray-400 text-sm mb-6">Sign in to manage content &amp; settings</p>
-
-              <form onSubmit={handleLogin} className="space-y-4">
-                {loginError && (
-                  <div className="bg-red-500/10 border border-red-500/20 text-red-300 px-4 py-3 rounded-xl text-sm font-medium flex items-center gap-2">
-                    <span>⚠️</span> {loginError}
-                  </div>
-                )}
-                <div>
-                  <label className="block text-gray-300 text-sm font-medium mb-2">Username</label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg">👤</span>
-                    <input
-                      type="text"
-                      value={loginForm.username}
-                      onChange={e => setLoginForm({...loginForm, username: e.target.value})}
-                      className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 transition"
-                      placeholder="Enter username"
-                      required
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-gray-300 text-sm font-medium mb-2">Password</label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg">🔒</span>
-                    <input
-                      type="password"
-                      value={loginForm.password}
-                      onChange={e => setLoginForm({...loginForm, password: e.target.value})}
-                      className="w-full pl-12 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 transition"
-                      placeholder="Enter password"
-                      required
-                    />
-                  </div>
-                </div>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-gradient-to-r from-pink-600 to-rose-600 text-white py-3 rounded-xl font-semibold disabled:opacity-50 hover:from-pink-500 hover:to-rose-500 transition-all shadow-lg shadow-pink-500/25"
-                >
-                  {loading ? '⏳ Signing in...' : '🚀 Sign In'}
-                </button>
-              </form>
-            </div>
-          </div>
+      <div className="min-h-screen bg-gradient-to-br from-[#1a0a0e] via-[#3a0f20] to-[#1a0a0e] flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-pink-500 border-t-transparent mb-4"></div>
+          <p className="text-white/70">Loading dashboard...</p>
         </div>
       </div>
     )
@@ -225,7 +195,7 @@ export default function TechnicianPage() {
               {/* Username Display */}
               <div className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg ${isDark ? 'bg-gray-800 text-gray-300' : 'bg-white text-gray-700 shadow-sm'}`}>
                 <span>👤</span>
-                <span className="text-sm font-medium">{user.username}</span>
+                <span className="text-sm font-medium">{user?.username}</span>
               </div>
               
               {/* Theme Toggle Switch */}
@@ -250,10 +220,12 @@ export default function TechnicianPage() {
               
               {/* Logout Button */}
               <button
-                onClick={() => setUser(null)}
+                onClick={handleLogout}
                 className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm font-medium shadow-sm"
               >
-                <span>🚪</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
                 <span className="hidden sm:inline">Logout</span>
               </button>
             </div>
@@ -264,15 +236,16 @@ export default function TechnicianPage() {
           {/* Content Card */}
           <div className={`rounded-2xl shadow-sm border p-6 transition-colors duration-300 ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
             {activeTab === 'notifications' && <Notifications />}
-            {activeTab === 'sermons' && <SermonsManager isDark={isDark} />}
-            {activeTab === 'events' && <EventsManager isDark={isDark} />}
-            {activeTab === 'announcements' && <AnnouncementsManager isDark={isDark} />}
-            {activeTab === 'gallery' && <GalleryManager isDark={isDark} />}
-            {activeTab === 'executives' && <ExecutivesManager isDark={isDark} />}
-            {activeTab === 'livestream' && <LivestreamManager isDark={isDark} />}
-            {activeTab === 'give' && <GiveSettingsManager isDark={isDark} />}
-            {activeTab === 'about' && <AboutContentManager isDark={isDark} />}
-            {activeTab === 'settings' && <SiteSettingsManager isDark={isDark} />}
+            {activeTab === 'sermons' && <SermonsManager />}
+            {activeTab === 'events' && <EventsManager />}
+            {activeTab === 'announcements' && <AnnouncementsManager />}
+            {activeTab === 'gallery' && <GalleryManager />}
+            {activeTab === 'executives' && <ExecutivesManager />}
+            {activeTab === 'livestream' && <LivestreamManager />}
+            {activeTab === 'give' && <GiveSettingsManager />}
+            {activeTab === 'about' && <AboutContentManager />}
+            {activeTab === 'settings' && <SiteSettingsManager />}
+            {activeTab === 'loginlogs' && <LoginLogs />}
             {activeTab === 'admins' && <UserManager
               adminUsers={adminUsers}
               showAddUser={showAddUser}
@@ -282,7 +255,6 @@ export default function TechnicianPage() {
               savingUser={savingUser}
               handleAddUser={handleAddUser}
               handleDeleteUser={handleDeleteUser}
-              isDark={isDark}
             />}
           </div>
         </div>
@@ -399,25 +371,30 @@ function SermonsManager() {
     try {
       const supabase = createClient()
       let imageUrl = ''
-      
+
       // Upload image if selected
       if (selectedFile) {
         const fileExt = selectedFile.name.split('.').pop()
         const fileName = `sermon-${Date.now()}.${fileExt}`
         const filePath = `gallery/${fileName}`
-        const { error: uploadError } = await supabase.storage.from('gallery').upload(filePath, selectedFile)
-        if (uploadError) throw uploadError
+        const { error: uploadError, data } = await supabase.storage.from('gallery').upload(filePath, selectedFile)
+        if (uploadError) {
+          if (uploadError.message.includes('Failed to fetch')) {
+            throw new Error('Storage bucket "gallery" not found. Please run the supabase-storage-setup.sql script in your Supabase SQL Editor.')
+          }
+          throw uploadError
+        }
         const { data: publicUrlData } = supabase.storage.from('gallery').getPublicUrl(filePath)
         imageUrl = publicUrlData.publicUrl
       }
-      
+
       const { error } = await supabase.from('sermons').insert([{ ...form, image_url: imageUrl }])
-      if (!error) { 
+      if (!error) {
         alert('✅ Saved!')
         setForm({ title: '', preacher: '', bibleText: '', date: '', content: '' })
         setSelectedFile(null)
         setPreviewUrl(null)
-        fetchSermons() 
+        fetchSermons()
       } else {
         alert('❌ Error: ' + error.message)
       }
@@ -559,7 +536,12 @@ function EventsManager() {
         const fileName = `event-${Date.now()}.${fileExt}`
         const filePath = `gallery/${fileName}`
         const { error: uploadError } = await supabase.storage.from('gallery').upload(filePath, selectedFile)
-        if (uploadError) throw uploadError
+        if (uploadError) {
+          if (uploadError.message.includes('Failed to fetch')) {
+            throw new Error('Storage bucket "gallery" not found. Please run the supabase-storage-setup.sql script.')
+          }
+          throw uploadError
+        }
         const { data: publicUrlData } = supabase.storage.from('gallery').getPublicUrl(filePath)
         imageUrl = publicUrlData.publicUrl
       }
@@ -816,7 +798,12 @@ function GalleryManager() {
         const filePath = `gallery/${fileName}`
         
         const { error: uploadError } = await supabase.storage.from('gallery').upload(filePath, file)
-        if (uploadError) throw uploadError
+        if (uploadError) {
+          if (uploadError.message.includes('Failed to fetch')) {
+            throw new Error('Storage bucket "gallery" not found. Please run the supabase-storage-setup.sql script.')
+          }
+          throw uploadError
+        }
         
         const { data: publicUrlData } = supabase.storage.from('gallery').getPublicUrl(filePath)
         uploadedUrls.push(publicUrlData.publicUrl)
@@ -1017,7 +1004,12 @@ function ExecutivesManager() {
         const fileName = `exec-${Date.now()}.${fileExt}`
         const filePath = `gallery/${fileName}`
         const { error: uploadError } = await supabase.storage.from('gallery').upload(filePath, selectedFile)
-        if (uploadError) throw uploadError
+        if (uploadError) {
+          if (uploadError.message.includes('Failed to fetch')) {
+            throw new Error('Storage bucket "gallery" not found. Please run the supabase-storage-setup.sql script.')
+          }
+          throw uploadError
+        }
         const { data: publicUrlData } = supabase.storage.from('gallery').getPublicUrl(filePath)
         imageUrl = publicUrlData.publicUrl
       }
@@ -1125,8 +1117,20 @@ function LivestreamManager() {
     e.preventDefault()
     setSaving(true)
     const supabase = createClient()
+    
+    // Validate YouTube URL
+    const url = form.youtubeUrl
+    const isValidUrl = url.includes('youtube.com') || url.includes('youtu.be') || (!url.includes('/') && url.length > 5)
+    
+    if (!isValidUrl) {
+      alert('❌ Please enter a valid YouTube URL or video ID')
+      setSaving(false)
+      return
+    }
+
     const { data: existing } = await supabase.from('livestream').select('id').limit(1).maybeSingle()
     let error = null
+    
     if (existing) {
       const { error: updateErr } = await supabase.from('livestream').update({ youtube_url: form.youtubeUrl, is_active: form.isActive }).eq('id', existing.id)
       error = updateErr
@@ -1134,8 +1138,12 @@ function LivestreamManager() {
       const { error: insertErr } = await supabase.from('livestream').insert({ youtube_url: form.youtubeUrl, is_active: form.isActive })
       error = insertErr
     }
-    if (!error) alert('✅ Updated!')
-    else alert('❌ Error: ' + error.message)
+    
+    if (!error) {
+      alert(`✅ Updated! Stream ${form.isActive ? 'is now LIVE' : 'is inactive'}`)
+    } else {
+      alert('❌ Error: ' + error.message)
+    }
     setSaving(false)
   }
 
@@ -1149,11 +1157,38 @@ function LivestreamManager() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">YouTube Stream URL</label>
-              <input type="url" value={form.youtubeUrl} onChange={e => setForm({...form, youtubeUrl: e.target.value})} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-pink-500 focus:border-transparent" placeholder="https://youtube.com/watch?v=..." required />
+              <input 
+                type="url" 
+                value={form.youtubeUrl} 
+                onChange={e => setForm({...form, youtubeUrl: e.target.value})} 
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-pink-500 focus:border-transparent" 
+                placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/... or video ID" 
+                required 
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                💡 Accepts: YouTube watch URLs, short URLs, live URLs, or just the video ID
+              </p>
             </div>
+            
+            {/* Preview */}
+            {form.youtubeUrl && (
+              <div className="bg-white p-4 rounded-lg border border-gray-200">
+                <p className="text-sm font-semibold text-gray-700 mb-2">📺 Embed Preview:</p>
+                <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden">
+                  <iframe
+                    src={getEmbedUrl(form.youtubeUrl)}
+                    className="w-full h-full"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  ></iframe>
+                </div>
+              </div>
+            )}
+            
             <label className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-100">
               <input type="checkbox" checked={form.isActive} onChange={e => setForm({...form, isActive: e.target.checked})} className="w-5 h-5 text-pink-600 rounded focus:ring-pink-500" />
-              <span className="text-sm font-medium text-gray-700">Stream is active</span>
+              <span className="text-sm font-medium text-gray-700">Stream is active (visible on website)</span>
             </label>
             {form.isActive && (
               <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
@@ -1217,7 +1252,12 @@ function SiteSettingsManager() {
         const fileName = `logo-${Date.now()}.${fileExt}`
         const filePath = `gallery/${fileName}`
         const { error: uploadError } = await supabase.storage.from('gallery').upload(filePath, logoFile)
-        if (uploadError) throw uploadError
+        if (uploadError) {
+          if (uploadError.message.includes('Failed to fetch')) {
+            throw new Error('Storage bucket "gallery" not found. Please run the supabase-storage-setup.sql script.')
+          }
+          throw uploadError
+        }
         const { data: publicUrlData } = supabase.storage.from('gallery').getPublicUrl(filePath)
         logoUrl = publicUrlData.publicUrl
       }
@@ -1317,8 +1357,24 @@ function SiteSettingsManager() {
 
       {/* Statistics */}
       <div className="bg-gray-50 p-5 rounded-xl border border-gray-100 space-y-4">
-        <h4 className="font-bold text-gray-800 text-sm uppercase tracking-wide flex items-center gap-2">📊 Statistics Display</h4>
-        <p className="text-xs text-gray-600 mb-2">These numbers appear on the homepage</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h4 className="font-bold text-gray-800 text-sm uppercase tracking-wide flex items-center gap-2">📊 Statistics Display</h4>
+            <p className="text-xs text-gray-600 mt-1">These numbers appear on the homepage</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              const key = `stat_custom_${Date.now()}`
+              setSettings({...settings, [key]: '', [`${key}_label`]: '', [`${key}_icon`]: ''})
+            }}
+            className="bg-gradient-to-r from-pink-600 to-rose-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:from-pink-500 hover:to-rose-500 transition-all shadow-md"
+          >
+            + Add Stat
+          </button>
+        </div>
+
+        {/* Default Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label className="block text-gray-700 font-semibold mb-2 text-sm">Community Count</label>
@@ -1333,6 +1389,62 @@ function SiteSettingsManager() {
             <input value={settings.stat_years || ''} onChange={e => setSettings({...settings, stat_years: e.target.value})} className="w-full px-4 py-2.5 border border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-pink-500 focus:border-transparent" placeholder="138+" />
           </div>
         </div>
+
+        {/* Custom Stats */}
+        {Object.keys(settings)
+          .filter(key => key.startsWith('stat_custom_'))
+          .map((statKey) => {
+            const statId = statKey.replace('stat_custom_', '')
+            const labelKey = `stat_custom_${statId}_label`
+            const iconKey = `stat_custom_${statId}_icon`
+            return (
+              <div key={statKey} className="flex items-end gap-3 p-4 bg-white rounded-lg border border-gray-200">
+                <div className="flex-1">
+                  <label className="block text-gray-700 font-semibold mb-1.5 text-xs">Label</label>
+                  <input
+                    value={settings[labelKey] || ''}
+                    onChange={e => setSettings({...settings, [labelKey]: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm"
+                    placeholder="e.g., Missionaries Sent"
+                  />
+                </div>
+                <div className="w-20">
+                  <label className="block text-gray-700 font-semibold mb-1.5 text-xs">Value</label>
+                  <input
+                    value={settings[statKey] || ''}
+                    onChange={e => setSettings({...settings, [statKey]: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm"
+                    placeholder="50+"
+                  />
+                </div>
+                <div className="w-16">
+                  <label className="block text-gray-700 font-semibold mb-1.5 text-xs">Icon</label>
+                  <input
+                    value={settings[iconKey] || ''}
+                    onChange={e => setSettings({...settings, [iconKey]: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg bg-white focus:ring-2 focus:ring-pink-500 focus:border-transparent text-sm"
+                    placeholder="🌍"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const newSettings = {...settings}
+                    delete newSettings[statKey]
+                    delete newSettings[labelKey]
+                    delete newSettings[iconKey]
+                    setSettings(newSettings)
+                  }}
+                  className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition mb-0.5"
+                  title="Remove stat"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            )
+          })}
       </div>
 
       {/* Social Media */}

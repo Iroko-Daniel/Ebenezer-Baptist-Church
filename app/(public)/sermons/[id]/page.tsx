@@ -2,12 +2,13 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
-export default async function SermonDetail({ params }: { params: { id: string } }) {
+export default async function SermonDetail({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const supabase = await createClient()
   const { data: sermon } = await supabase
     .from('sermons')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!sermon) {

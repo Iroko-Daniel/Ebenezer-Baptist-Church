@@ -14,6 +14,14 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-church-gold: var(--church-gold);
+  --color-church-gold-dark: var(--church-gold-dark);
+  --color-church-burgundy: var(--church-burgundy);
+  --color-church-burgundy-dark: var(--church-burgundy-dark);
+  --color-church-cream: var(--church-cream);
+  --color-church-warm-gray: var(--church-warm-gray);
+  --color-church-navy: #0f2027;
+  --color-church-blue: #1a2d47;
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

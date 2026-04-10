@@ -3,7 +3,7 @@
 -- Ebenezer Baptist Church Website
 -- Complete database setup - Run this in Supabase SQL Editor
 -- =====================================================
--- This file consolidates all schema files into one comprehensive setup.
+-- This file consolidates ALL schema files into one comprehensive setup.
 -- Includes: tables, indexes, default data, RLS policies, and site settings.
 -- =====================================================
 
@@ -80,11 +80,48 @@ CREATE TABLE IF NOT EXISTS livestream (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS login_logs (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id TEXT NOT NULL,
+  username TEXT NOT NULL,
+  role TEXT NOT NULL,
+  ip_address TEXT,
+  user_agent TEXT,
+  browser_name TEXT,
+  browser_version TEXT,
+  os_name TEXT,
+  os_version TEXT,
+  device_type TEXT,
+  device_name TEXT,
+  screen_resolution TEXT,
+  language TEXT,
+  connection_type TEXT,
+  network_type TEXT,
+  platform TEXT,
+  cpu_cores INTEGER,
+  memory_mb FLOAT,
+  touch_support BOOLEAN,
+  timezone TEXT,
+  login_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  logout_at TIMESTAMP WITH TIME ZONE,
+  is_active BOOLEAN DEFAULT true
+);
+
 CREATE TABLE IF NOT EXISTS users (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   username TEXT UNIQUE NOT NULL,
   password_hash TEXT NOT NULL,
   role TEXT CHECK (role IN ('admin', 'technician')) DEFAULT 'admin',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS leaders (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  position TEXT,
+  bio TEXT,
+  photo_url TEXT,
+  sort_order INTEGER DEFAULT 0,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -102,9 +139,33 @@ CREATE TABLE IF NOT EXISTS site_settings (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   setting_key TEXT UNIQUE NOT NULL,
   setting_value TEXT,
-  setting_type TEXT DEFAULT 'text',
-  description TEXT,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS about_content (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  section TEXT UNIQUE NOT NULL,
+  content TEXT NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS core_values (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  sort_order INTEGER DEFAULT 1,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS give_accounts (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  bank TEXT NOT NULL,
+  purpose TEXT NOT NULL,
+  account_name TEXT NOT NULL,
+  account_number TEXT NOT NULL,
+  sort_order INTEGER DEFAULT 1,
+  is_active BOOLEAN DEFAULT true,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- =====================================================
@@ -118,6 +179,12 @@ CREATE INDEX IF NOT EXISTS idx_gallery_category ON gallery_images(category);
 CREATE INDEX IF NOT EXISTS idx_enquiries_type ON enquiries(type);
 CREATE INDEX IF NOT EXISTS idx_executives_sort ON executives(sort_order ASC);
 CREATE INDEX IF NOT EXISTS idx_site_settings_key ON site_settings(setting_key);
+CREATE INDEX IF NOT EXISTS idx_about_content_section ON about_content(section);
+CREATE INDEX IF NOT EXISTS idx_core_values_sort ON core_values(sort_order ASC);
+CREATE INDEX IF NOT EXISTS idx_give_accounts_sort ON give_accounts(sort_order ASC);
+CREATE INDEX IF NOT EXISTS idx_login_logs_device_type ON login_logs(device_type);
+CREATE INDEX IF NOT EXISTS idx_login_logs_os_name ON login_logs(os_name);
+CREATE INDEX IF NOT EXISTS idx_login_logs_browser_name ON login_logs(browser_name);
 
 -- =====================================================
 -- 3. INSERT DEFAULT DATA
@@ -137,7 +204,6 @@ VALUES
 ON CONFLICT DO NOTHING;
 
 -- Default users (passwords: admin123, technician123)
--- SHA-256 hashes used by lib/auth.ts
 INSERT INTO users (username, password_hash, role)
 VALUES
   ('admin', '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918', 'admin'),
@@ -145,119 +211,28 @@ VALUES
 ON CONFLICT (username) DO NOTHING;
 
 -- Default site settings
-INSERT INTO site_settings (setting_key, setting_value, setting_type, description) VALUES
-  ('church_name', 'Ebenezer Baptist Church', 'text', 'Official church name'),
-  ('church_tagline', 'A Place of Worship and Community', 'text', 'Church tagline/motto'),
-  ('church_address', '50A Campbell Street, Lagos Island, Lagos', 'text', 'Main church address'),
-  ('church_phone', '+234 802 345 6789', 'text', 'Main church phone number'),
-  ('church_email', 'info@ebenezerbaptist.org', 'text', 'Church email'),
-  ('founded_year', '1888', 'text', 'Year church was founded'),
-  ('church_motto', '...led by the Spirit of God', 'text', 'Church motto verse'),
-  ('logo_url', '/logo.png', 'image_url', 'Path to church logo'),
-  ('service_times', 'Sunday School: 9:00 AM | Main Service: 10:00 AM', 'textarea', 'Regular service schedule'),
-  ('wednesday_service', 'Wednesday Bible Study: 6:00 PM', 'textarea', 'Midweek service time'),
-  ('friday_service', 'Friday Prayer Meeting: 7:00 PM', 'textarea', 'Friday service time'),
-  ('stat_community', '300+', 'text', 'Community member count display'),
-  ('stat_active_members', '359+', 'text', 'Active member count display'),
-  ('stat_years', '138+', 'text', 'Years of service count display'),
-  ('facebook_url', '', 'url', 'Facebook page URL'),
-  ('twitter_url', '', 'url', 'Twitter/X profile URL'),
-  ('youtube_url', '', 'url', 'YouTube channel URL'),
-  ('instagram_url', '', 'url', 'Instagram profile URL')
+INSERT INTO site_settings (setting_key, setting_value) VALUES
+  ('church_name', 'Ebenezer Baptist Church'),
+  ('church_tagline', 'A Place of Worship and Community'),
+  ('church_address', '50A Campbell Street, Lagos Island, Lagos'),
+  ('church_phone', '+234 802 345 6789'),
+  ('church_email', 'info@ebenezerbaptist.org'),
+  ('founded_year', '1888'),
+  ('church_motto', '...led by the Spirit of God'),
+  ('logo_url', '/logo.png'),
+  ('service_times', 'Sunday School: 9:00 AM | Main Service: 10:00 AM'),
+  ('wednesday_service', 'Wednesday Bible Study: 6:00 PM'),
+  ('friday_service', 'Friday Prayer Meeting: 7:00 PM'),
+  ('stat_community', '300+'),
+  ('stat_active_members', '359+'),
+  ('stat_years', '138+'),
+  ('facebook_url', ''),
+  ('twitter_url', ''),
+  ('youtube_url', ''),
+  ('instagram_url', '')
 ON CONFLICT (setting_key) DO NOTHING;
 
--- =====================================================
--- 4. ROW LEVEL SECURITY (RLS) POLICIES
--- =====================================================
-
--- Drop all existing policies first to avoid conflicts
-DROP POLICY IF EXISTS "Allow all sermons" ON sermons;
-DROP POLICY IF EXISTS "Allow all events" ON events;
-DROP POLICY IF EXISTS "Allow all announcements" ON announcements;
-DROP POLICY IF EXISTS "Allow all gallery_images" ON gallery_images;
-DROP POLICY IF EXISTS "Allow all enquiries" ON enquiries;
-DROP POLICY IF EXISTS "Allow all branches" ON branches;
-DROP POLICY IF EXISTS "Allow all livestream" ON livestream;
-DROP POLICY IF EXISTS "Allow all users" ON users;
-DROP POLICY IF EXISTS "Allow all executives" ON executives;
-DROP POLICY IF EXISTS "Allow all site_settings" ON site_settings;
-
--- Enable RLS on all tables
-ALTER TABLE sermons ENABLE ROW LEVEL SECURITY;
-ALTER TABLE events ENABLE ROW LEVEL SECURITY;
-ALTER TABLE announcements ENABLE ROW LEVEL SECURITY;
-ALTER TABLE gallery_images ENABLE ROW LEVEL SECURITY;
-ALTER TABLE enquiries ENABLE ROW LEVEL SECURITY;
-ALTER TABLE branches ENABLE ROW LEVEL SECURITY;
-ALTER TABLE livestream ENABLE ROW LEVEL SECURITY;
-ALTER TABLE users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE executives ENABLE ROW LEVEL SECURITY;
-ALTER TABLE site_settings ENABLE ROW LEVEL SECURITY;
-
--- Create simple "Allow All" policies for each table
-CREATE POLICY "Allow all sermons" ON sermons FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all events" ON events FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all announcements" ON announcements FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all gallery_images" ON gallery_images FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all enquiries" ON enquiries FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all branches" ON branches FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all livestream" ON livestream FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all users" ON users FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all executives" ON executives FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all site_settings" ON site_settings FOR ALL USING (true) WITH CHECK (true);
-
--- =====================================================
--- 5. STORAGE BUCKET POLICIES (for gallery bucket)
--- =====================================================
-
--- Drop existing storage policies first
-DROP POLICY IF EXISTS "Allow public uploads" ON storage.objects;
-DROP POLICY IF EXISTS "Allow public viewing" ON storage.objects;
-DROP POLICY IF EXISTS "Allow public deletes" ON storage.objects;
-
--- Create storage policies for gallery bucket
-CREATE POLICY "Allow public uploads" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'gallery');
-CREATE POLICY "Allow public viewing" ON storage.objects FOR SELECT USING (bucket_id = 'gallery');
-CREATE POLICY "Allow public deletes" ON storage.objects FOR DELETE USING (bucket_id = 'gallery');
-
--- =====================================================
--- 6. ADDITIONAL TABLES (About Content & Core Values)
--- =====================================================
-
--- Create the about_content table
-CREATE TABLE IF NOT EXISTS about_content (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  section TEXT UNIQUE NOT NULL,
-  content TEXT NOT NULL,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Create the core_values table
-CREATE TABLE IF NOT EXISTS core_values (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  title TEXT NOT NULL,
-  description TEXT NOT NULL,
-  sort_order INTEGER DEFAULT 1,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Create indexes for about tables
-CREATE INDEX IF NOT EXISTS idx_about_content_section ON about_content(section);
-CREATE INDEX IF NOT EXISTS idx_core_values_sort ON core_values(sort_order ASC);
-
--- Drop existing policies for about tables to avoid conflicts
-DROP POLICY IF EXISTS "Allow all about_content" ON about_content;
-DROP POLICY IF EXISTS "Allow all core_values" ON core_values;
-
--- Enable Row Level Security for about tables
-ALTER TABLE about_content ENABLE ROW LEVEL SECURITY;
-ALTER TABLE core_values ENABLE ROW LEVEL SECURITY;
-
--- Create "Allow All" policies for about tables
-CREATE POLICY "Allow all about_content" ON about_content FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all core_values" ON core_values FOR ALL USING (true) WITH CHECK (true);
-
--- Insert default church history
+-- Default church history
 INSERT INTO about_content (section, content)
 VALUES (
   'history',
@@ -274,7 +249,7 @@ The church building itself is a testimony to the faithfulness of God and the ded
 Today, Ebenezer Baptist Church continues to thrive as a vibrant center of worship, discipleship, and community service. With a rich history spanning over 138 years, the church remains committed to its founding vision of reaching the unreached with the message of the cross in the power of the Holy Spirit.'
 ) ON CONFLICT (section) DO NOTHING;
 
--- Insert default vision
+-- Default vision
 INSERT INTO about_content (section, content)
 VALUES (
   'vision',
@@ -283,14 +258,14 @@ VALUES (
 Motto: "...led by the Spirit of God"'
 ) ON CONFLICT (section) DO NOTHING;
 
--- Insert default mission
+-- Default mission
 INSERT INTO about_content (section, content)
 VALUES (
   'mission',
   'Our mission is to glorify God by making disciples who are Spirit-filled, word-based, and committed to transforming lives and communities through the gospel of Jesus Christ.'
 ) ON CONFLICT (section) DO NOTHING;
 
--- Insert default core values
+-- Default core values
 INSERT INTO core_values (title, description, sort_order)
 VALUES
   ('Faith Inspired', 'We are committed to walking by faith and not by sight.', 1),
@@ -303,35 +278,7 @@ VALUES
   ('Soul Winning', 'We are committed to sharing the gospel with the world.', 8)
 ON CONFLICT DO NOTHING;
 
--- =====================================================
--- 7. GIVING ACCOUNTS TABLE
--- =====================================================
-
--- Create the give_accounts table
-CREATE TABLE IF NOT EXISTS give_accounts (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  bank TEXT NOT NULL,
-  purpose TEXT NOT NULL,
-  account_name TEXT NOT NULL,
-  account_number TEXT NOT NULL,
-  sort_order INTEGER DEFAULT 1,
-  is_active BOOLEAN DEFAULT true,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- Create index for sorting
-CREATE INDEX IF NOT EXISTS idx_give_accounts_sort ON give_accounts(sort_order ASC);
-
--- Drop existing policy for give_accounts to avoid conflicts
-DROP POLICY IF EXISTS "Allow all give_accounts" ON give_accounts;
-
--- Enable Row Level Security
-ALTER TABLE give_accounts ENABLE ROW LEVEL SECURITY;
-
--- Create "Allow All" policy
-CREATE POLICY "Allow all give_accounts" ON give_accounts FOR ALL USING (true) WITH CHECK (true);
-
--- Insert default bank accounts
+-- Default bank accounts
 INSERT INTO give_accounts (bank, purpose, account_name, account_number, sort_order, is_active)
 VALUES
   ('Polaris Bank', 'Tithes & Offering', 'Ebenezer Baptist Church', '4090684422', 1, true),
@@ -339,6 +286,77 @@ VALUES
   ('FCMB', 'Benevolence', 'Ebenezer Baptist Church', '2963644010', 3, true),
   ('First Bank', 'Single-Again Fellowship', 'The Single-Again Fellowship', '20076799010', 4, true)
 ON CONFLICT DO NOTHING;
+
+-- =====================================================
+-- 4. ROW LEVEL SECURITY (RLS) POLICIES
+-- =====================================================
+
+-- Drop all existing policies first to avoid conflicts
+DROP POLICY IF EXISTS "Allow all sermons" ON sermons;
+DROP POLICY IF EXISTS "Allow all events" ON events;
+DROP POLICY IF EXISTS "Allow all announcements" ON announcements;
+DROP POLICY IF EXISTS "Allow all gallery_images" ON gallery_images;
+DROP POLICY IF EXISTS "Allow all enquiries" ON enquiries;
+DROP POLICY IF EXISTS "Allow all branches" ON branches;
+DROP POLICY IF EXISTS "Allow all livestream" ON livestream;
+DROP POLICY IF EXISTS "Allow all users" ON users;
+DROP POLICY IF EXISTS "Allow all leaders" ON leaders;
+DROP POLICY IF EXISTS "Allow all executives" ON executives;
+DROP POLICY IF EXISTS "Allow all site_settings" ON site_settings;
+DROP POLICY IF EXISTS "Allow all login_logs" ON login_logs;
+DROP POLICY IF EXISTS "Allow all about_content" ON about_content;
+DROP POLICY IF EXISTS "Allow all core_values" ON core_values;
+DROP POLICY IF EXISTS "Allow all give_accounts" ON give_accounts;
+DROP POLICY IF EXISTS "Allow public uploads" ON storage.objects;
+DROP POLICY IF EXISTS "Allow public viewing" ON storage.objects;
+DROP POLICY IF EXISTS "Allow public deletes" ON storage.objects;
+
+-- Enable RLS on all tables
+ALTER TABLE sermons ENABLE ROW LEVEL SECURITY;
+ALTER TABLE events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE announcements ENABLE ROW LEVEL SECURITY;
+ALTER TABLE gallery_images ENABLE ROW LEVEL SECURITY;
+ALTER TABLE enquiries ENABLE ROW LEVEL SECURITY;
+ALTER TABLE branches ENABLE ROW LEVEL SECURITY;
+ALTER TABLE livestream ENABLE ROW LEVEL SECURITY;
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE leaders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE executives ENABLE ROW LEVEL SECURITY;
+ALTER TABLE site_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE login_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE about_content ENABLE ROW LEVEL SECURITY;
+ALTER TABLE core_values ENABLE ROW LEVEL SECURITY;
+ALTER TABLE give_accounts ENABLE ROW LEVEL SECURITY;
+
+-- Create "Allow All" policies for each table
+CREATE POLICY "Allow all sermons" ON sermons FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all events" ON events FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all announcements" ON announcements FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all gallery_images" ON gallery_images FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all enquiries" ON enquiries FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all branches" ON branches FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all livestream" ON livestream FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all users" ON users FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all leaders" ON leaders FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all executives" ON executives FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all site_settings" ON site_settings FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all login_logs" ON login_logs FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all about_content" ON about_content FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all core_values" ON core_values FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all give_accounts" ON give_accounts FOR ALL USING (true) WITH CHECK (true);
+
+-- Storage bucket policies
+CREATE POLICY "Allow public uploads" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'gallery');
+CREATE POLICY "Allow public viewing" ON storage.objects FOR SELECT USING (bucket_id = 'gallery');
+CREATE POLICY "Allow public deletes" ON storage.objects FOR DELETE USING (bucket_id = 'gallery');
+
+-- =====================================================
+-- 5. STORAGE BUCKET CREATION
+-- =====================================================
+
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('gallery', 'gallery', true)
+ON CONFLICT (id) DO NOTHING;
 
 -- =====================================================
 -- SETUP COMPLETE!

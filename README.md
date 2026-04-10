@@ -1,188 +1,248 @@
 # Ebenezer Baptist Church Website
 
-A modern, comprehensive church website built with Next.js 16, TypeScript, Tailwind CSS v4, and Supabase.
+A modern, full-stack website for Ebenezer Baptist Church - A Place of Worship and Community.
 
-**🌐 Live Site**: [Visit Website](https://your-domain.vercel.app)
+Built with **Next.js 16**, **React 19**, **TypeScript**, **Tailwind CSS v4**, and **Supabase**.
 
-## ✨ Features
-
-### Public Pages
-- **Home** — Hero section, service times, statistics, announcements, events, sermons, and call-to-action
-- **About** — Church history, mission, vision, values, and executives
-- **Sermons** — Browse and read sermon messages with Bible references
-- **Events** — Upcoming church events with dates and locations
-- **Gallery** — Photo gallery with category filtering
-- **Livestream** — Embedded YouTube livestream player
-- **Announcements** — Priority-coded announcements (Normal, High, Urgent)
-- **Enquiry Forms** — Contact forms for various needs:
-  - New to Church
-  - Counselling
-  - Getting Married
-  - Child Dedication
-  - Prayer Requests
-  - Testimonies
-- **Branches** — All church locations
-- **Give Now** — Bank account details with copy-to-clipboard
-
-### Admin Dashboard (`/admin`)
-- Manage sermons, events, announcements
-- Upload and manage gallery images
-- Configure livestream settings
-- View and manage enquiries
-- Manage site settings (church name, logo, address, etc.)
-
-### Technician Portal (`/technician`)
-- All admin capabilities
-- Manage bank accounts for Give page
-- Add/edit/delete enquiries
-- User management (admins & technicians)
-
-## 🛠️ Tech Stack
-
-- **Framework**: Next.js 16 (App Router)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS v4
-- **Backend**: Supabase (PostgreSQL, Storage, RLS)
-- **Deployment**: Vercel
-- **Icons**: React Icons, SVG icons
-
-## 🚀 Getting Started
+## 🚀 Quick Start
 
 ### Prerequisites
-
-- Node.js 18+ and npm
-- Supabase account and project
+- Node.js 18+ installed
+- A Supabase project (free tier works)
 
 ### Installation
 
-```bash
-# Clone the repository
-cd ebenezer-website
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/Iroko-Daniel/Ebenezer-Baptist-Church.git
+   cd Ebenezer-Baptist-Church
+   ```
 
-# Install dependencies
-npm install
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-# Set up environment variables
-# Edit .env.local with your Supabase credentials
-```
+3. **Set up environment variables:**
+   Create a `.env.local` file in the root directory:
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=your-supabase-project-url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+   ```
 
-### Environment Variables
+   To get these credentials:
+   - Go to your Supabase project dashboard
+   - Click **Project Settings** (gear icon) → **API**
+   - Copy the **Project URL** and **anon public** key
 
-Create/update `.env.local`:
+4. **Start the development server:**
+   ```bash
+   npm run dev
+   ```
 
-```env
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-```
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### Database Setup
+## 🗄️ Database Setup
 
-1. Create a project at [Supabase](https://supabase.com)
-2. Go to SQL Editor in your Supabase dashboard
-3. Run the schema files in order:
-   - `database/schema.sql` — Main database schema
-   - `database/give_accounts.sql` — Bank accounts table
+### One-Step Database Setup
 
-### Development
+1. **Open Supabase SQL Editor:**
+   - Go to: https://supabase.com/dashboard
+   - Click on your project
+   - Click **SQL Editor** in the left sidebar
+   - Click **New query**
 
-```bash
-npm run dev
-```
+2. **Run the schema:**
+   - Open the file: `database/schema.sql`
+   - Copy ALL content (Ctrl+A, Ctrl+C)
+   - Paste into the SQL Editor (Ctrl+V)
+   - Click **Run** or press Ctrl+Enter
+   - Wait for it to complete (~10 seconds)
 
-Open [http://localhost:3000](http://localhost:3000)
+3. **Verify the setup:**
+   - Click **Table Editor** in the left sidebar
+   - You should see 15 tables including:
+     - ✅ `users` (with 2 default users)
+     - ✅ `sermons`, `events`, `announcements`
+     - ✅ `gallery_images`, `enquiries`, `branches`
+     - ✅ `livestream`, `login_logs`, `leaders`
+     - ✅ `executives`, `site_settings`
+     - ✅ `about_content`, `core_values`, `give_accounts`
 
-### Production Build
+### Create Storage Bucket
 
-```bash
-npm run build
-npm start
-```
+1. In Supabase, go to **Storage** in the left sidebar
+2. Click **New bucket**
+3. Name it: `gallery`
+4. Toggle **Public bucket** to ON
+5. Click **Create bucket**
+
+### Default Login Credentials
+
+| Username | Password | Role |
+|----------|----------|------|
+| admin | admin123 | Admin |
+| technician | technician123 | Technician |
 
 ## 📁 Project Structure
 
 ```
-ebenezer-website/
-├── app/                      # Next.js pages
-│   ├── about/               # About & executives
-│   ├── admin/               # Admin dashboard
-│   ├── announcements/       # Announcements
-│   ├── branches/            # Church branches
-│   ├── enquire/             # Enquiry forms
-│   ├── events/              # Events
-│   ├── gallery/             # Photo gallery
-│   ├── give/                # Give Now page
-│   ├── livestream/          # Livestream
-│   ├── sermons/             # Sermons
-│   ├── technician/          # Technician dashboard
-│   ├── page.tsx             # Home page
-│   ├── layout.tsx           # Root layout
-│   └── globals.css          # Global styles
-├── components/              # Reusable components
-│   ├── Header.tsx           # Navigation header
-│   ├── Footer.tsx           # Site footer
-│   ├── Notifications.tsx    # Enquiries viewer
-│   └── EnquiryForm.tsx      # Form component
-├── database/                # SQL migrations
-│   ├── schema.sql           # Main database schema
-│   └── give_accounts.sql    # Bank accounts schema
-├── lib/                     # Utilities
-│   ├── supabase/            # Supabase clients
-│   ├── auth.ts              # Authentication
-│   └── site-settings.ts     # Site settings helper
-├── public/                  # Static assets
-│   └── logo.png             # Church logo
-├── docs/                    # Documentation
-│   └── DEPLOYMENT.md        # Deployment guide
-├── .env.local               # Environment variables
-├── package.json             # Dependencies
-├── next.config.ts           # Next.js config
-├── tsconfig.json            # TypeScript config
-└── README.md                # This file
+├── app/                      # Next.js App Router
+│   ├── (admin)/             # Admin routes (protected)
+│   │   ├── admin/           # Admin dashboard
+│   │   └── technician/      # Technician dashboard
+│   ├── (public)/            # Public routes
+│   │   ├── about/           # About pages
+│   │   ├── announcements/   # Announcements
+│   │   ├── branches/        # Church branches
+│   │   ├── enquire/         # Enquiry forms
+│   │   ├── events/          # Events
+│   │   ├── gallery/         # Photo gallery
+│   │   ├── give/            # Giving/tithes
+│   │   ├── livestream/      # Livestream
+│   │   └── sermons/         # Sermons
+│   ├── login/               # Login page
+│   └── page.tsx             # Home page
+├── components/              # React components
+│   ├── layout/             # Header, Footer
+│   └── features/           # Feature-specific components
+├── lib/                    # Utilities & libraries
+│   ├── supabase/          # Supabase client
+│   ├── auth.ts            # Authentication
+│   └── site-settings.ts   # Site configuration
+├── database/              # Database schemas
+│   └── schema.sql         # Complete database schema
+└── public/                # Static assets
 ```
 
-## 🎨 Design
+## 🛠️ Available Scripts
 
-### Color Palette
-- **Primary**: Navy Blue `#1e3a5f`
-- **Accent**: Gold `#d4af37`
-- **Secondary**: Burgundy `#7a2040`
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
 
-### Features
-- Responsive mobile-first design
-- Glassmorphism effects on cards
-- Smooth hover animations
-- Dropdown navigation with arrow indicators
-- Gold accents and gradient backgrounds
+## 🌐 Features
 
-## 🔐 Default Credentials
+### Public Features
+- **Home Page** - Welcome section with service times
+- **About** - Church history, mission, vision, values, executives
+- **Media** - Sermons, events, gallery, livestream
+- **Announcements** - Church announcements with priority levels
+- **Enquire** - Forms for new visitors, counselling, marriage, child dedication, prayer requests, testimonies
+- **Branches** - Church branch locations
+- **Give** - Online giving with multiple bank accounts
 
-**Admin:**
-- Username: `admin`
-- Password: `admin123`
+### Admin Features
+- **Admin Dashboard** - Full site management
+- **User Management** - Create and manage user accounts
+- **Content Management** - Manage sermons, events, announcements, gallery
+- **Login Logs** - Track user login/logout activity with device info
+- **Site Settings** - Configure church information, service times, contact details
 
-**Technician:**
-- Username: `technician`
-- Password: `technician123`
+### Technical Features
+- **Responsive Design** - Mobile-first with Tailwind CSS
+- **Expandable Mobile Menu** - Collapsible navigation sections on mobile
+- **Authentication** - Username/password-based auth with role-based access
+- **Row Level Security** - Supabase RLS policies for data protection
+- **Device Fingerprinting** - Track login sessions across devices
+- **TypeScript** - Full type safety
 
-⚠️ **Change these passwords in production!**
+## 🗃️ Database Schema
 
-## 📱 Social Media
+### Tables (15 total)
 
-- **Facebook**: https://www.facebook.com/ebenezerbclagos50A/
-- **YouTube**: https://www.youtube.com/@ebenezerbaptistchurch2246
-- **Instagram**: https://www.instagram.com/ebenezerbclagos/
+1. **`users`** - User accounts (admin & technician roles)
+2. **`sermons`** - Church sermons with images and media
+3. **`events`** - Church events with dates
+4. **`announcements`** - Announcements with priority levels
+5. **`gallery_images`** - Photo gallery uploads
+6. **`enquiries`** - User enquiries and prayer requests
+7. **`branches`** - Church branch locations
+8. **`livestream`** - YouTube livestream configuration
+9. **`login_logs`** - User login/logout tracking with device info
+10. **`leaders`** - Church leaders
+11. **`executives`** - Church executive members
+12. **`site_settings`** - Site configuration (church name, address, service times)
+13. **`about_content`** - About page content (history, vision, mission)
+14. **`core_values`** - Church core values
+15. **`give_accounts`** - Bank accounts for tithes/offerings
 
-## 📍 Church Information
+## 🚨 Troubleshooting
 
-**Ebenezer Baptist Church**  
-50A Campbell Street, Lagos Island, Lagos  
-Founded: 1888  
-*"…led by the Spirit of God"*
+### "Database query timed out" Error
 
-## 📝 License
+**Solution:** The `site_settings` table doesn't exist yet. Run the database schema as described in the Database Setup section.
 
-Created for Ebenezer Baptist Church.
+### "Error creating user: {}"
+
+**Root Cause:** The `users` table doesn't exist or there's a connection issue.
+
+**Solution:**
+
+1. **Verify Supabase connection:**
+   - Check `.env.local` has correct credentials
+   - Ensure your Supabase project is not paused
+
+2. **Create the users table:**
+   - **Option A (Recommended):** Run the full `database/schema.sql` file
+   - **Option B (Quick fix):** Run only `create-users-table-only.sql`
+
+3. **Verify the table was created:**
+   - Go to **Table Editor** in Supabase
+   - Look for the `users` table
+   - You should see 2 default users (admin and technician)
+
+### Common Error Messages
+
+| Error Message | Solution |
+|--------------|----------|
+| "The users table does not exist" | Run the `schema.sql` file in SQL Editor |
+| "Username already exists" | Choose a different username |
+| "Cannot connect to Supabase" | Check internet connection and `.env.local` |
+| "Permission denied" | Check RLS policies in Table Editor |
+
+### Debugging Tips
+
+1. **Check browser console** (F12) for detailed error messages
+2. **Verify environment variables** in `.env.local`
+3. **Restart dev server** with `npm run dev`
+4. **Clear browser cache** and try again
+5. **Check Supabase project** is not paused
+
+## 🚀 Deployment
+
+### Deploy to Vercel
+
+1. Push your code to GitHub
+2. Go to [Vercel](https://vercel.com)
+3. Import your repository
+4. Add environment variables:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+5. Deploy!
+
+**Note:** Make sure to run the database schema in Supabase before deploying.
+
+## 📝 Tech Stack
+
+- **Framework:** Next.js 16
+- **Language:** TypeScript
+- **UI:** React 19
+- **Styling:** Tailwind CSS v4
+- **Database:** PostgreSQL (via Supabase)
+- **Authentication:** Custom Supabase-based auth
+- **Deployment:** Vercel
+- **Icons:** React Icons
+
+## 🤝 Contributing
+
+This is a church website project. If you're part of the development team, feel free to submit improvements and bug fixes.
+
+## 📄 License
+
+Private project - All rights reserved
 
 ---
 
-**Need help?** Contact the church administrator or refer to `docs/DEPLOYMENT.md`
+**Need Help?** Check the troubleshooting section above or review the browser console for detailed error messages.

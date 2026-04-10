@@ -53,9 +53,22 @@ export default function Announcements() {
       <section className="py-10 sm:py-12 bg-gradient-to-b from-white to-[#fef9f3]">
         <div className="container mx-auto px-4 sm:px-6">
           {loading ? (
-            <p className="text-center text-gray-500 py-12">Loading announcements...</p>
+            <div className="text-center py-16">
+              <div className="inline-block animate-spin rounded-full h-10 w-10 border-4 border-[#d4af37] border-t-transparent"></div>
+              <p className="mt-4 text-gray-500 text-sm">Loading announcements...</p>
+            </div>
           ) : announcements.length === 0 ? (
-            <p className="text-center text-gray-500 py-12">No announcements yet.</p>
+            <div className="text-center py-16 max-w-md mx-auto">
+              <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-[#fef9f3] to-white rounded-full flex items-center justify-center border-2 border-[#d4af37]/30">
+                <svg className="w-10 h-10 text-[#d4af37]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">No Announcements Yet</h3>
+              <p className="text-gray-500 text-sm leading-relaxed">
+                Stay tuned for updates from our church community. New announcements will appear here as they become available.
+              </p>
+            </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
               {announcements.map((announcement, index) => (
