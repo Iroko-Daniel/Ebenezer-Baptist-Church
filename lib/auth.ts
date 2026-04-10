@@ -341,14 +341,20 @@ export async function deleteLoginLog(logId: string): Promise<boolean> {
 export async function clearAllLoginLogs(): Promise<boolean> {
   try {
     const supabase = createClient()
-    const { error } = await supabase
-      .from('login_logs')
-      .delete()
-      .neq('id', '') // Delete all
+    const { error } = await supabase.rpc('clear_login_logs')
 
     if (error) {
-      console.error('Error clearing login logs:', error)
-      return false
+      // Fallback: use raw SQL via REST API
+      const { error: fallbackError } = await supabase
+        .from('login_logs')
+        .delete()
+        .gte('id', '00000000-0000-0000-0000-000000000000')
+
+      if (fallbackError) {
+        console.error('Error clearing login logs:', fallbackError)
+        return false
+      }
+      return true
     }
 
     return true

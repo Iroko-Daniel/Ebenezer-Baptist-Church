@@ -382,6 +382,21 @@ VALUES ('gallery', 'gallery', true)
 ON CONFLICT (id) DO NOTHING;
 
 -- =====================================================
+-- 6. HELPER FUNCTIONS
+-- =====================================================
+
+-- Function to clear all login logs
+CREATE OR REPLACE FUNCTION clear_login_logs()
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  DELETE FROM login_logs;
+END;
+$$;
+
+-- =====================================================
 -- SETUP COMPLETE!
 -- Next Steps:
 -- 1. Go to Storage in Supabase Dashboard
