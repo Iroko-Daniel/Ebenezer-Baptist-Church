@@ -1099,6 +1099,21 @@ function ExecutivesManager() {
 // LIVESTREAM MANAGER
 // ═══════════════════════════════════════════════════
 
+function getEmbedUrl(url: string) {
+  if (!url) return ''
+  if (url.includes('/embed/')) return url.includes('?') ? url : `${url}?rel=0&autoplay=1`
+  const watchMatch = url.match(/[?&]v=([^&]+)/)
+  if (watchMatch) return `https://www.youtube.com/embed/${watchMatch[1]}?rel=0&autoplay=1`
+  if (url.includes('youtu.be/')) {
+    const id = url.split('youtu.be/')[1]?.split('?')[0]?.split('&')[0]
+    return `https://www.youtube.com/embed/${id}?rel=0&autoplay=1`
+  }
+  const liveMatch = url.match(/\/live\/([^?&]+)/)
+  if (liveMatch) return `https://www.youtube.com/embed/${liveMatch[1]}?rel=0&autoplay=1`
+  if (!url.includes('/') && !url.includes('?') && url.length > 5) return `https://www.youtube.com/embed/${url}?rel=0&autoplay=1`
+  return url
+}
+
 function LivestreamManager() {
   const [form, setForm] = useState({ youtubeUrl: '', isActive: false })
   const [saving, setSaving] = useState(false)
