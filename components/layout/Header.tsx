@@ -254,13 +254,13 @@ export default function Header() {
         {mobileMenuOpen && (
           <div className="lg:hidden pb-3 border-t border-white/10 pt-3">
             <nav className="flex flex-col space-y-1">
-              <Link href="/" className="text-white hover:text-[#d4af37] py-1.5 transition-colors text-sm">Home</Link>
+              <Link href="/" className="text-white hover:text-[#d4af37] py-2 transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>Home</Link>
               
-              {/* About - Expandable */}
+              {/* About - Collapsed by default */}
               <div>
                 <button
                   onClick={() => setMobileAboutExpanded(!mobileAboutExpanded)}
-                  className="w-full flex items-center justify-between text-white hover:text-[#d4af37] py-1.5 transition-colors text-sm"
+                  className="w-full flex items-center justify-between text-white hover:text-[#d4af37] py-2 transition-colors text-sm"
                 >
                   About
                   <svg
@@ -274,18 +274,18 @@ export default function Header() {
                 </button>
                 {mobileAboutExpanded && (
                   <div className="pl-4 border-l-2 border-white/10 mt-1 space-y-1">
-                    <Link href="/about#history" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm">Our History</Link>
-                    <Link href="/about#mission-vision" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm">Mission, Vision & Values</Link>
-                    <Link href="/about/executives" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm">Executives</Link>
+                    <Link href="/about#history" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>Our History</Link>
+                    <Link href="/about#mission-vision" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>Mission, Vision & Values</Link>
+                    <Link href="/about/executives" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>Executives</Link>
                   </div>
                 )}
               </div>
 
-              {/* Media - Expandable */}
+              {/* Media - Collapsed by default */}
               <div>
                 <button
                   onClick={() => setMobileMediaExpanded(!mobileMediaExpanded)}
-                  className="w-full flex items-center justify-between text-white hover:text-[#d4af37] py-1.5 transition-colors text-sm"
+                  className="w-full flex items-center justify-between text-white hover:text-[#d4af37] py-2 transition-colors text-sm"
                 >
                   Media
                   <svg
@@ -299,21 +299,21 @@ export default function Header() {
                 </button>
                 {mobileMediaExpanded && (
                   <div className="pl-4 border-l-2 border-white/10 mt-1 space-y-1">
-                    <Link href="/sermons" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm">Sermons</Link>
-                    <Link href="/events" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm">Events</Link>
-                    <Link href="/gallery" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm">Gallery</Link>
-                    <Link href="/livestream" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm">Livestream</Link>
+                    <Link href="/sermons" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>Sermons</Link>
+                    <Link href="/events" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>Events</Link>
+                    <Link href="/gallery" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>Gallery</Link>
+                    <Link href="/livestream" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>Livestream</Link>
                   </div>
                 )}
               </div>
 
-              <Link href="/announcements" className="text-white hover:text-[#d4af37] py-1.5 transition-colors text-sm">Announcements</Link>
+              <Link href="/announcements" className="text-white hover:text-[#d4af37] py-2 transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>Announcements</Link>
 
-              {/* Enquire - Expandable */}
+              {/* Enquire - Collapsed by default */}
               <div>
                 <button
                   onClick={() => setMobileEnquireExpanded(!mobileEnquireExpanded)}
-                  className="w-full flex items-center justify-between text-white hover:text-[#d4af37] py-1.5 transition-colors text-sm"
+                  className="w-full flex items-center justify-between text-white hover:text-[#d4af37] py-2 transition-colors text-sm"
                 >
                   Enquire
                   <svg
@@ -327,18 +327,18 @@ export default function Header() {
                 </button>
                 {mobileEnquireExpanded && (
                   <div className="pl-4 border-l-2 border-white/10 mt-1 space-y-1">
-                    <Link href="/enquire/new-to-church" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm">New to Church</Link>
-                    <Link href="/enquire/counselling" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm">Counselling</Link>
-                    <Link href="/enquire/getting-married" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm">Getting Married</Link>
-                    <Link href="/enquire/child-dedication" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm">Child Dedication</Link>
-                    <Link href="/enquire/prayer-requests" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm">Prayer Requests</Link>
-                    <Link href="/enquire/testimonies" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm">Testimonies</Link>
+                    <Link href="/enquire/new-to-church" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>New to Church</Link>
+                    <Link href="/enquire/counselling" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>Counselling</Link>
+                    <Link href="/enquire/getting-married" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>Getting Married</Link>
+                    <Link href="/enquire/child-dedication" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>Child Dedication</Link>
+                    <Link href="/enquire/prayer-requests" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>Prayer Requests</Link>
+                    <Link href="/enquire/testimonies" className="block text-white/80 hover:text-[#d4af37] py-1.5 transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>Testimonies</Link>
                   </div>
                 )}
               </div>
 
-              <Link href="/branches" className="text-white hover:text-[#d4af37] py-1.5 transition-colors text-sm">Branches</Link>
-              <Link href="/give" className="give-now-btn text-center py-1.5 mt-2 text-sm">Give Now</Link>
+              <Link href="/branches" className="text-white hover:text-[#d4af37] py-2 transition-colors text-sm" onClick={() => setMobileMenuOpen(false)}>Branches</Link>
+              <Link href="/give" className="give-now-btn text-center py-2 mt-1 text-sm" onClick={() => setMobileMenuOpen(false)}>Give Now</Link>
             </nav>
           </div>
         )}
