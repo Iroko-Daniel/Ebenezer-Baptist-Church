@@ -412,7 +412,14 @@ function SermonsManager() {
         imageUrl = publicUrlData.publicUrl
       }
 
-      const { error } = await supabase.from('sermons').insert([{ ...form, image_url: imageUrl }])
+      const { error } = await supabase.from('sermons').insert([{
+        title: form.title,
+        preacher: form.preacher,
+        bible_text: form.bibleText,
+        date: form.date,
+        content: form.content,
+        image_url: imageUrl,
+      }])
       if (!error) {
         alert('✅ Saved!')
         setForm({ title: '', preacher: '', bibleText: '', date: '', content: '' })
