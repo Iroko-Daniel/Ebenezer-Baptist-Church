@@ -821,7 +821,11 @@ function GalleryManager() {
         const fileName = `${Date.now()}-${i}.${fileExt}`
         const filePath = `gallery/${fileName}`
         
-        const { error: uploadError } = await supabase.storage.from('gallery').upload(filePath, file)
+        const { error: uploadError } = await supabase.storage.from('gallery').upload(filePath, file, {
+          cacheControl: '3600',
+          contentType: file.type || undefined,
+          upsert: false,
+        })
         if (uploadError) {
           if (uploadError.message.includes('Failed to fetch')) {
             throw new Error('Storage bucket "gallery" not found. Please run the supabase-storage-setup.sql script.')
@@ -890,7 +894,7 @@ function GalleryManager() {
             <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" multiple required />
             <span className="text-4xl block mb-3">📁</span>
             <p className="text-base text-gray-700 font-semibold mb-1">Click to upload images</p>
-            <p className="text-sm text-gray-500">Select multiple images at once (PNG, JPG, GIF up to 10MB each)</p>
+            <p className="text-sm text-gray-500">Select multiple images at once (PNG, JPG, GIF up to 10MB each). Files are kept in original quality.</p>
           </label>
           
           {previewUrls.length > 0 && (

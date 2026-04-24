@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { FaUsers, FaUserCheck, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaPlayCircle, FaCalendar, FaBullhorn, FaEnvelope, FaBook, FaBookOpen } from 'react-icons/fa'
@@ -49,6 +49,7 @@ export default function Home() {
   const [typedWelcomeText, setTypedWelcomeText] = useState('')
   const [typedBibleText, setTypedBibleText] = useState('')
   const [isTypingComplete, setIsTypingComplete] = useState(false)
+  const hasPlayedTyping = useRef(false)
 
   useEffect(() => {
     fetchData()
@@ -56,6 +57,9 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
+    if (hasPlayedTyping.current) return
+    hasPlayedTyping.current = true
+
     let cancelled = false
     const timers: ReturnType<typeof setTimeout>[] = []
     const introText = 'Welcome to'

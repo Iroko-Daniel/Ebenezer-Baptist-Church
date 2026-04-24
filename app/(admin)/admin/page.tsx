@@ -551,7 +551,11 @@ function GalleryManager() {
       const fileExt = selectedFile.name.split('.').pop()
       const fileName = `${Date.now()}.${fileExt}`
       const filePath = `gallery/${fileName}`
-      const { error: uploadError } = await supabase.storage.from('gallery').upload(filePath, selectedFile)
+      const { error: uploadError } = await supabase.storage.from('gallery').upload(filePath, selectedFile, {
+        cacheControl: '3600',
+        contentType: selectedFile.type || undefined,
+        upsert: false,
+      })
       if (uploadError) throw uploadError
       const { data: publicUrlData } = supabase.storage.from('gallery').getPublicUrl(filePath)
       const { error: dbError } = await supabase.from('gallery_images').insert({ title: form.title, url: publicUrlData.publicUrl, category: form.category })
@@ -589,7 +593,7 @@ function GalleryManager() {
             <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" required />
             <span className="text-3xl block mb-2">📁</span>
             <p className="text-sm text-gray-600 font-medium">Click to upload an image</p>
-            <p className="text-xs text-gray-400 mt-1">PNG, JPG, GIF up to 10MB</p>
+            <p className="text-xs text-gray-400 mt-1">PNG, JPG, GIF up to 10MB. Uploaded in original quality.</p>
           </label>
           {previewUrl && <img src={previewUrl} alt="Preview" className="max-h-40 rounded-lg border border-gray-200" />}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

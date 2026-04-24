@@ -276,7 +276,7 @@ export default function Header() {
               {/* About - Collapsed by default */}
               <div>
                 <button
-                  onClick={() => setMobileAboutExpanded(!mobileAboutExpanded)}
+                  onClick={() => toggleMobileSection('about')}
                   className="w-full flex items-center justify-between text-white hover:text-[#d4af37] py-2 transition-colors text-sm"
                 >
                   About
@@ -301,7 +301,7 @@ export default function Header() {
               {/* Media - Collapsed by default */}
               <div>
                 <button
-                  onClick={() => setMobileMediaExpanded(!mobileMediaExpanded)}
+                  onClick={() => toggleMobileSection('media')}
                   className="w-full flex items-center justify-between text-white hover:text-[#d4af37] py-2 transition-colors text-sm"
                 >
                   Media
@@ -329,7 +329,7 @@ export default function Header() {
               {/* Enquire - Collapsed by default */}
               <div>
                 <button
-                  onClick={() => setMobileEnquireExpanded(!mobileEnquireExpanded)}
+                  onClick={() => toggleMobileSection('enquire')}
                   className="w-full flex items-center justify-between text-white hover:text-[#d4af37] py-2 transition-colors text-sm"
                 >
                   Enquire
