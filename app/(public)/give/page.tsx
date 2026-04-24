@@ -109,7 +109,7 @@ export default function GiveNow() {
                 <div key={account.id} className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
                   {/* Card Header */}
                   <div className={`bg-gradient-to-r ${account.color} p-5 sm:p-6 text-white`}>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-start justify-between gap-3">
                       <div>
                         <h3 className="text-xl sm:text-2xl font-bold">{account.bank}</h3>
                         <p className="text-white/80 text-sm mt-1">{account.purpose}</p>
@@ -125,10 +125,10 @@ export default function GiveNow() {
                   {/* Card Body */}
                   <div className="p-5 sm:p-6 space-y-4">
                     {/* Account Name */}
-                    <div className="flex items-center justify-between bg-gray-50 rounded-lg p-3 sm:p-4">
-                      <div>
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between bg-gray-50 rounded-lg p-3 sm:p-4">
+                      <div className="min-w-0">
                         <p className="text-xs sm:text-sm text-gray-500 font-medium">Account Name</p>
-                        <p className="text-sm sm:text-base font-bold text-gray-900 mt-0.5">{account.account_name}</p>
+                        <p className="text-sm sm:text-base font-bold text-gray-900 mt-0.5 break-words">{account.account_name}</p>
                       </div>
                       <button
                         onClick={() => copyToClipboard(account.account_name, `name-${index}`)}
@@ -148,10 +148,10 @@ export default function GiveNow() {
                     </div>
 
                     {/* Account Number */}
-                    <div className="flex items-center justify-between bg-gray-50 rounded-lg p-3 sm:p-4">
-                      <div>
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between bg-gray-50 rounded-lg p-3 sm:p-4">
+                      <div className="min-w-0">
                         <p className="text-xs sm:text-sm text-gray-500 font-medium">Account Number</p>
-                        <p className="text-xl sm:text-2xl font-bold tracking-wider mt-0.5" style={{ fontFamily: 'monospace' }}>
+                        <p className="text-lg sm:text-2xl font-bold tracking-[0.15em] sm:tracking-wider mt-0.5 break-all" style={{ fontFamily: 'monospace' }}>
                           {account.account_number}
                         </p>
                       </div>

@@ -327,6 +327,15 @@ body {
 .hero-floating-button {
   animation: hero-button-float 3.2s ease-in-out infinite;
   box-shadow: 0 14px 30px rgba(0, 0, 0, 0.18);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.hero-floating-button:hover {
+  box-shadow:
+    0 0 0 1px rgba(212, 175, 55, 0.35),
+    0 0 18px rgba(212, 175, 55, 0.45),
+    0 0 36px rgba(212, 175, 55, 0.28),
+    0 18px 38px rgba(0, 0, 0, 0.22);
 }
 
 .hero-floating-delay-1 {

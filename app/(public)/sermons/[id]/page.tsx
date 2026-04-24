@@ -28,13 +28,20 @@ export default async function SermonDetail({ params }: { params: Promise<{ id: s
       </section>
 
       {/* Sermon Content */}
-      <section className="py-16 bg-white">
-        <div className="container mx-auto px-4 max-w-4xl">
-          <div className="bg-gray-50 rounded-lg p-8 mb-8">
-            <div className="h-96 bg-gray-300 rounded-lg flex items-center justify-center mb-6">
-              <span className="text-gray-600 text-2xl">Sermon Image</span>
-            </div>
-            <div className="grid grid-cols-2 gap-4 mb-6 text-sm">
+      <section className="py-12 sm:py-16 bg-white">
+        <div className="container mx-auto px-4 sm:px-6 max-w-4xl">
+          <div className="bg-gray-50 rounded-lg p-5 sm:p-8 mb-8">
+            {sermon.image_url ? (
+              <div
+                className="h-64 sm:h-80 md:h-96 bg-cover bg-center rounded-lg mb-6"
+                style={{ backgroundImage: `url('${sermon.image_url}')` }}
+              />
+            ) : (
+              <div className="h-56 sm:h-72 md:h-96 bg-gradient-to-br from-[#4a1328] to-[#6b1d3a] rounded-lg flex items-center justify-center mb-6">
+                <span className="text-white/80 text-lg sm:text-2xl">Sermon Image</span>
+              </div>
+            )}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 text-sm">
               <div>
                 <p className="text-gray-600"><strong>Preacher:</strong></p>
                 <p>{sermon.preacher}</p>
@@ -51,8 +58,8 @@ export default async function SermonDetail({ params }: { params: Promise<{ id: s
           </div>
 
           <div className="prose max-w-none mb-8">
-            <h2 className="text-3xl font-bold mb-4">Sermon Message</h2>
-            <p className="text-gray-700 text-lg leading-relaxed whitespace-pre-line">{sermon.content}</p>
+            <h2 className="text-2xl sm:text-3xl font-bold mb-4">Sermon Message</h2>
+            <p className="text-gray-700 text-base sm:text-lg leading-relaxed whitespace-pre-line">{sermon.content}</p>
           </div>
 
           <div className="text-center">

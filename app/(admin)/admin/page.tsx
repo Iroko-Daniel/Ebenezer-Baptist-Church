@@ -26,6 +26,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true)
   const [isDark, setIsDark] = useState(false)
   const [showGreeting, setShowGreeting] = useState(false)
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const router = useRouter()
 
   // Check authentication on mount
@@ -79,6 +80,11 @@ export default function AdminPage() {
     router.push('/login')
   }
 
+  const handleTabChange = (tab: TabId) => {
+    setActiveTab(tab)
+    setMobileNavOpen(false)
+  }
+
   // Show loading state while checking auth
   if (loading) {
     return (
@@ -93,11 +99,11 @@ export default function AdminPage() {
 
   // ───────────── DASHBOARD ─────────────
   return (
-    <div className={`min-h-screen flex transition-colors duration-300 ${isDark ? 'bg-gray-900' : 'bg-[#f0f2f5]'}`}>
+    <div className={`min-h-screen lg:flex transition-colors duration-300 ${isDark ? 'bg-gray-900' : 'bg-[#f0f2f5]'}`}>
       {/* Welcome Greeting Overlay */}
       {showGreeting && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
-          <div className="animate-bounce-in bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-12 py-8 rounded-3xl shadow-2xl text-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none p-4">
+          <div className="animate-bounce-in bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 sm:px-12 py-6 sm:py-8 rounded-3xl shadow-2xl text-center max-w-sm w-full">
             <div className="text-5xl mb-4">👋</div>
             <h2 className="text-3xl font-bold mb-2">Welcome Back!</h2>
             <p className="text-lg text-white/90">Hello, {user?.username}!</p>
@@ -105,7 +111,15 @@ export default function AdminPage() {
         </div>
       )}
       {/* ─── LEFT SIDEBAR ─── */}
-      <aside className={`w-64 border-r flex flex-col shadow-sm flex-shrink-0 transition-colors duration-300 ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+      {mobileNavOpen && (
+        <button
+          type="button"
+          aria-label="Close navigation"
+          className="fixed inset-0 z-30 bg-black/50 lg:hidden"
+          onClick={() => setMobileNavOpen(false)}
+        />
+      )}
+      <aside className={`fixed inset-y-0 left-0 z-40 w-72 max-w-[85vw] border-r flex flex-col shadow-sm flex-shrink-0 transition-all duration-300 lg:static lg:w-64 lg:max-w-none ${mobileNavOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
         {/* Brand */}
         <div className={`p-5 border-b transition-colors duration-300 ${isDark ? 'border-gray-700' : 'border-gray-100'}`}>
           <div className="flex items-center gap-3">
@@ -126,7 +140,7 @@ export default function AdminPage() {
             return (
               <button
                 key={item.id}
-                onClick={() => setActiveTab(item.id)}
+                onClick={() => handleTabChange(item.id)}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
                   isActive
                     ? 'bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 shadow-sm border border-blue-100'
@@ -150,18 +164,28 @@ export default function AdminPage() {
       </aside>
 
       {/* ─── MAIN CONTENT ─── */}
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 min-w-0 overflow-auto">
         {/* Top Bar with Theme Toggle */}
-        <div className={`sticky top-0 z-10 px-6 py-3 border-b backdrop-blur-sm transition-colors duration-300 ${isDark ? 'bg-gray-900/95 border-gray-700' : 'bg-[#f0f2f5]/95 border-gray-200'}`}>
-          <div className="max-w-5xl mx-auto flex items-center justify-between">
+        <div className={`sticky top-0 z-20 px-4 sm:px-6 py-3 border-b backdrop-blur-sm transition-colors duration-300 ${isDark ? 'bg-gray-900/95 border-gray-700' : 'bg-[#f0f2f5]/95 border-gray-200'}`}>
+          <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-3">
             <div>
               <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  className={`lg:hidden inline-flex items-center justify-center w-10 h-10 rounded-xl border transition-colors ${isDark ? 'border-gray-700 bg-gray-800 text-gray-100' : 'border-gray-200 bg-white text-gray-900'}`}
+                  onClick={() => setMobileNavOpen(true)}
+                  aria-label="Open navigation"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                </button>
                 <span className="text-2xl">{NAV_ITEMS.find(t => t.id === activeTab)?.emoji}</span>
-                <h2 className={`text-xl font-bold transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>{NAV_ITEMS.find(t => t.id === activeTab)?.label}</h2>
+                <h2 className={`text-lg sm:text-xl font-bold transition-colors duration-300 ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>{NAV_ITEMS.find(t => t.id === activeTab)?.label}</h2>
               </div>
             </div>
             
-            <div className="flex items-center gap-4">
+            <div className="flex w-full sm:w-auto items-center justify-end gap-3 sm:gap-4">
               {/* Username Display */}
               <div className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg ${isDark ? 'bg-gray-800 text-gray-300' : 'bg-white text-gray-700 shadow-sm'}`}>
                 <span>👤</span>
@@ -202,9 +226,9 @@ export default function AdminPage() {
           </div>
         </div>
         
-        <div className="max-w-5xl mx-auto p-6 sm:p-8">
+        <div className="max-w-5xl mx-auto p-4 sm:p-6 lg:p-8">
           {/* Content Card */}
-          <div className={`rounded-2xl shadow-sm border p-6 transition-colors duration-300 ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
+          <div className={`rounded-2xl shadow-sm border p-4 sm:p-6 transition-colors duration-300 ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
             {activeTab === 'notifications' && <Notifications />}
             {activeTab === 'sermons' && <SermonsManager />}
             {activeTab === 'events' && <EventsManager />}
@@ -304,7 +328,7 @@ function SermonsManager() {
               </div>
             ) : (
               sermons.map(s => (
-                <div key={s.id} className="flex items-center justify-between bg-gray-50 p-4 rounded-xl border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all">
+                <div key={s.id} className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between bg-gray-50 p-4 rounded-xl border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all">
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-gray-900 truncate">📖 {s.title}</p>
                     <p className="text-sm text-gray-500 mt-1">👤 {s.preacher} • 📅 {new Date(s.date).toLocaleDateString()}</p>
@@ -387,7 +411,7 @@ function EventsManager() {
               </div>
             ) : (
               events.map(ev => (
-                <div key={ev.id} className="flex items-center justify-between bg-gray-50 p-4 rounded-xl border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all">
+                <div key={ev.id} className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between bg-gray-50 p-4 rounded-xl border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all">
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-gray-900 truncate">📅 {ev.title}</p>
                     <p className="text-sm text-gray-500 mt-1">📅 {new Date(ev.date).toLocaleDateString()} • 📍 {ev.location}</p>
@@ -471,7 +495,7 @@ function AnnouncementsManager() {
               <p className="text-center py-8 text-gray-400">No announcements yet. Add your first one above! ☝️</p>
             ) : (
               announcements.map(a => (
-                <div key={a.id} className="flex items-center justify-between bg-gray-50 p-4 rounded-xl border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all">
+                <div key={a.id} className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between bg-gray-50 p-4 rounded-xl border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all">
                   <div className="flex-1 min-w-0 pr-4">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-sm">{priorityEmoji[a.priority]}</span>
@@ -729,7 +753,7 @@ function BranchesManager() {
               <p className="text-center py-8 text-gray-400">No branches yet. Add your first one above! ☝️</p>
             ) : (
               branches.map(b => (
-                <div key={b.id} className="flex items-center justify-between bg-gray-50 p-4 rounded-xl border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all">
+                <div key={b.id} className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between bg-gray-50 p-4 rounded-xl border border-gray-100 hover:border-blue-200 hover:shadow-sm transition-all">
                   <div className="flex-1 min-w-0 pr-4">
                     <p className="font-semibold text-gray-900">⛪ {b.name}</p>
                     <p className="text-sm text-gray-500 mt-1">🏙️ {b.city} • 📍 {b.address}</p>
