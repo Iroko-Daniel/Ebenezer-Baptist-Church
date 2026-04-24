@@ -45,8 +45,10 @@ export default function Home() {
   const [heroImage, setHeroImage] = useState('https://images.unsplash.com/photo-1438032005730-c779502df39b?w=1920&q=80')
   const [heroBibleText, setHeroBibleText] = useState('"Not by might, nor by power, but by my Spirit, says the Lord." - Zechariah 4:6 (NKJV)')
   const [loading, setLoading] = useState(true)
+  const [typedIntroText, setTypedIntroText] = useState('')
   const [typedWelcomeText, setTypedWelcomeText] = useState('')
   const [typedBibleText, setTypedBibleText] = useState('')
+  const [isTypingComplete, setIsTypingComplete] = useState(false)
 
   useEffect(() => {
     fetchData()
@@ -56,23 +58,37 @@ export default function Home() {
   useEffect(() => {
     let cancelled = false
     const timers: ReturnType<typeof setTimeout>[] = []
+    const introText = 'Welcome to'
     const welcomeText = 'Ebenezer Baptist Church'
+    const introSpeed = 85
     const welcomeSpeed = 85
     const verseSpeed = 28
-    const verseDelay = 500
+    const sectionDelay = 400
 
+    setTypedIntroText('')
     setTypedWelcomeText('')
     setTypedBibleText('')
+    setIsTypingComplete(false)
+
+    introText.split('').forEach((character, index) => {
+      const timer = setTimeout(() => {
+        if (cancelled) return
+        setTypedIntroText((current) => current + character)
+      }, introSpeed * index)
+      timers.push(timer)
+    })
+
+    const welcomeStart = introText.length * introSpeed + sectionDelay
 
     welcomeText.split('').forEach((character, index) => {
       const timer = setTimeout(() => {
         if (cancelled) return
         setTypedWelcomeText((current) => current + character)
-      }, welcomeSpeed * index)
+      }, welcomeStart + welcomeSpeed * index)
       timers.push(timer)
     })
 
-    const bibleStart = welcomeText.length * welcomeSpeed + verseDelay
+    const bibleStart = welcomeStart + welcomeText.length * welcomeSpeed + sectionDelay
 
     heroBibleText.split('').forEach((character, index) => {
       const timer = setTimeout(() => {
@@ -81,6 +97,12 @@ export default function Home() {
       }, bibleStart + verseSpeed * index)
       timers.push(timer)
     })
+
+    const completeTimer = setTimeout(() => {
+      if (cancelled) return
+      setIsTypingComplete(true)
+    }, bibleStart + heroBibleText.length * verseSpeed + sectionDelay)
+    timers.push(completeTimer)
 
     return () => {
       cancelled = true
@@ -175,11 +197,19 @@ export default function Home() {
             </div>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 drop-shadow-2xl leading-tight animate-pulse">
-            Welcome to<br />
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 drop-shadow-2xl leading-tight">
+            <span className="inline-flex items-baseline">
+              {typedIntroText}
+              {!isTypingComplete && typedWelcomeText.length === 0 && (
+                <span aria-hidden="true" className="type-cursor ml-1" />
+              )}
+            </span>
+            <br />
             <span className="text-church-gold inline-flex items-baseline">
               {typedWelcomeText}
-              <span aria-hidden="true" className="type-cursor ml-1" />
+              {!isTypingComplete && typedWelcomeText.length > 0 && (
+                <span aria-hidden="true" className="type-cursor ml-1" />
+              )}
             </span>
           </h1>
 
@@ -188,13 +218,13 @@ export default function Home() {
           </p>
 
           <div className="flex flex-wrap justify-center items-center gap-3 px-4">
-            <Link href="/give" className="bg-gradient-to-r from-church-gold to-church-gold-dark text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5">
+            <Link href="/give" className="hero-floating-button bg-gradient-to-r from-church-gold to-church-gold-dark text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5">
               Give Online
             </Link>
-            <Link href="/sermons" className="bg-white text-gray-900 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base hover:bg-gray-100 transition shadow-lg hover:shadow-xl hover:-translate-y-0.5">
-              Watch Sermons
+            <Link href="/sermons" className="hero-floating-button hero-floating-delay-1 bg-white text-gray-900 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base hover:bg-gray-100 transition shadow-lg hover:shadow-xl hover:-translate-y-0.5">
+              Read Sermons
             </Link>
-            <Link href="/enquire" className="bg-transparent border-2 border-white text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base hover:bg-white hover:text-gray-900 transition hover:-translate-y-0.5">
+            <Link href="/enquire" className="hero-floating-button hero-floating-delay-2 bg-transparent border-2 border-white text-white px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-bold text-sm sm:text-base hover:bg-white hover:text-gray-900 transition hover:-translate-y-0.5">
               Contact Us
             </Link>
           </div>

@@ -315,6 +315,28 @@ body {
   animation: type-cursor-blink 0.9s step-end infinite;
 }
 
+@keyframes hero-button-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
+.hero-floating-button {
+  animation: hero-button-float 3.2s ease-in-out infinite;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.18);
+}
+
+.hero-floating-delay-1 {
+  animation-delay: 0.35s;
+}
+
+.hero-floating-delay-2 {
+  animation-delay: 0.7s;
+}
+
 .gallery-image {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   cursor: pointer;
