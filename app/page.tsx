@@ -43,13 +43,50 @@ export default function Home() {
   const [events, setEvents] = useState<Event[]>([])
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
   const [heroImage, setHeroImage] = useState('https://images.unsplash.com/photo-1438032005730-c779502df39b?w=1920&q=80')
-  const [heroBibleText, setHeroBibleText] = useState('"Not by might, nor by power, but by my Spirit, says the Lord." — Zechariah 4:6 (NKJV)')
+  const [heroBibleText, setHeroBibleText] = useState('"Not by might, nor by power, but by my Spirit, says the Lord." - Zechariah 4:6 (NKJV)')
   const [loading, setLoading] = useState(true)
+  const [typedWelcomeText, setTypedWelcomeText] = useState('')
+  const [typedBibleText, setTypedBibleText] = useState('')
 
   useEffect(() => {
     fetchData()
     fetchHeroSettings()
   }, [])
+
+  useEffect(() => {
+    let cancelled = false
+    const timers: ReturnType<typeof setTimeout>[] = []
+    const welcomeText = 'Ebenezer Baptist Church'
+    const welcomeSpeed = 85
+    const verseSpeed = 28
+    const verseDelay = 500
+
+    setTypedWelcomeText('')
+    setTypedBibleText('')
+
+    welcomeText.split('').forEach((character, index) => {
+      const timer = setTimeout(() => {
+        if (cancelled) return
+        setTypedWelcomeText((current) => current + character)
+      }, welcomeSpeed * index)
+      timers.push(timer)
+    })
+
+    const bibleStart = welcomeText.length * welcomeSpeed + verseDelay
+
+    heroBibleText.split('').forEach((character, index) => {
+      const timer = setTimeout(() => {
+        if (cancelled) return
+        setTypedBibleText((current) => current + character)
+      }, bibleStart + verseSpeed * index)
+      timers.push(timer)
+    })
+
+    return () => {
+      cancelled = true
+      timers.forEach(clearTimeout)
+    }
+  }, [heroBibleText])
 
   const fetchHeroSettings = async () => {
     try {
@@ -138,13 +175,16 @@ export default function Home() {
             </div>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 drop-shadow-2xl leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 drop-shadow-2xl leading-tight animate-pulse">
             Welcome to<br />
-            <span className="text-church-gold">Ebenezer Baptist Church</span>
+            <span className="text-church-gold inline-flex items-baseline">
+              {typedWelcomeText}
+              <span aria-hidden="true" className="type-cursor ml-1" />
+            </span>
           </h1>
 
-          <p className="text-base sm:text-lg md:text-xl mb-6 italic text-white/90 drop-shadow-lg max-w-2xl mx-auto px-4">
-            {heroBibleText}
+          <p className="text-base sm:text-lg md:text-xl mb-6 italic text-white/90 drop-shadow-lg max-w-2xl mx-auto px-4 min-h-[4.5rem] sm:min-h-[5.5rem]">
+            {typedBibleText}
           </p>
 
           <div className="flex flex-wrap justify-center items-center gap-3 px-4">

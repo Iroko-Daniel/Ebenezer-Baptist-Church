@@ -298,6 +298,23 @@ body {
   }
 }
 
+@keyframes type-cursor-blink {
+  0%, 45% {
+    opacity: 1;
+  }
+  46%, 100% {
+    opacity: 0;
+  }
+}
+
+.type-cursor {
+  width: 0.1em;
+  height: 1em;
+  background: currentColor;
+  display: inline-block;
+  animation: type-cursor-blink 0.9s step-end infinite;
+}
+
 .gallery-image {
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   cursor: pointer;
