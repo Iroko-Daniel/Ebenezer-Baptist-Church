@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { FaUsers, FaUserCheck, FaCalendarAlt, FaClock, FaMapMarkerAlt, FaPlayCircle, FaCalendar, FaBullhorn, FaEnvelope, FaBook, FaBookOpen } from 'react-icons/fa'
@@ -49,7 +49,7 @@ export default function Home() {
   const [typedWelcomeText, setTypedWelcomeText] = useState('')
   const [typedBibleText, setTypedBibleText] = useState('')
   const [isTypingComplete, setIsTypingComplete] = useState(false)
-  const hasPlayedTyping = useRef(false)
+  const [heroSettingsReady, setHeroSettingsReady] = useState(false)
 
   useEffect(() => {
     fetchData()
@@ -57,8 +57,7 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    if (hasPlayedTyping.current) return
-    hasPlayedTyping.current = true
+    if (!heroSettingsReady) return
 
     let cancelled = false
     const timers: ReturnType<typeof setTimeout>[] = []
@@ -112,7 +111,7 @@ export default function Home() {
       cancelled = true
       timers.forEach(clearTimeout)
     }
-  }, [heroBibleText])
+  }, [heroBibleText, heroSettingsReady])
 
   const fetchHeroSettings = async () => {
     try {
@@ -122,6 +121,8 @@ export default function Home() {
       if (settings.hero_bible_text) setHeroBibleText(settings.hero_bible_text)
     } catch (err) {
       console.error('Error fetching hero settings:', err)
+    } finally {
+      setHeroSettingsReady(true)
     }
   }
 

@@ -1,0 +1,7 @@
+.env.local
+.next/
+.qwen/
+node_modules/
+keys.txt
+tsconfig.tsbuildinfo
+nul
